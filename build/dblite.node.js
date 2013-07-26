@@ -26,6 +26,7 @@ db.on('info', console.log.bind(console));
 db.on('error', console.error.bind(console));
 */
 
+/*! (C) Andrea Giammarchi !*/
 var
   isArray = Array.isArray,
   EventEmitter = require('events').EventEmitter,
@@ -40,8 +41,6 @@ var
   doubleQuotes = /""/g,
   SELECT = /^(?:select|SELECT|pragma|PRAGMA) /,
   INSERT = /^(?:insert|INSERT) /,
-  //BEGIN = /^(?:begin|BEGIN)(?: |$)/,
-  //COMMIT = /^(?:commit|COMMIT|end transaction|END TRANSACTION)(?: |$)/,
   SANITIZER = new RegExp("[;" + EOL.split('').map(function(c) {
     return '\\x' + ('0' + c.charCodeAt(0).toString(16)).slice(-2);
   }).join('') + "]+$"),
@@ -103,6 +102,7 @@ function dblite() {
   };
   self.lastRowID = function(table, callback) {
     self.query(
+      // 'SELECT last_insert_rowid() FROM ' + table // will not work as expected
       'SELECT ROWID FROM `' + table + '` ORDER BY ROWID DESC LIMIT 1',
       function(result){
         (callback || log)(result[0][0]);
@@ -207,7 +207,7 @@ function parseFields($fields) {
     length = fields.length,
     i = 0; i < length; i++
   ) {
-    parsers[i] = fields[i];
+    parsers[i] = $fields[fields[i]];
   }
   return {f: fields, p: parsers};
 }
@@ -258,12 +258,16 @@ function row2parsed(row) {
 }
 
 function safer(what) {
+  /*jshint eqnull: true*/
+  var isNULL = what == null;
   switch (typeof what) {
     case 'object':
-      what = JSON.stringify(what);
+      what = isNULL ? 'null' : JSON.stringify(what);
       /* falls through */
     case 'string':
-      return "'" + what.replace(SINGLE_QUOTES, SINGLE_QUOTES_DOUBLED) + "'";
+      return isNULL ? what : (
+        "'" + what.replace(SINGLE_QUOTES, SINGLE_QUOTES_DOUBLED) + "'"
+      );
     case 'boolean':
       return what ? '1' : '0';
     case 'number':
@@ -275,18 +279,6 @@ function safer(what) {
 function sanitize(string) {
   return string.replace(SANITIZER, '') + SANITIZER_REPLACER;
 }
-
-/*
-function transaction(string, i, arr) {
-  string = sanitize(string);
-  if (i === 0 && !BEGIN.test(string)) {
-    string = 'BEGIN TRANSACTION;' + EOL + string;
-  } else if(i === arr.length - 1 && !COMMIT.test(string)) {
-    string += 'COMMIT;' + EOL;
-  }
-  return string;
-}
-*/
 
 dblite.bin = 'sqlite3';
 

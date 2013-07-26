@@ -52,6 +52,55 @@ wru.test([
       }));
     }
   },{
+    name: 'auto escape',
+    test: function () {
+      var uniqueKey = 'key' + Math.random();
+      db.query('INSERT INTO kvp VALUES(?, ?, ?)', [null, uniqueKey, 'unique value']);
+      db.query('SELECT * FROM kvp WHERE key = ?', [uniqueKey], wru.async(function (rows) {
+        wru.assert('all good', rows.length === 1 && rows[0][2] === 'unique value' && rows[0][1] === uniqueKey);
+      }));
+    }
+  },{
+    name: 'auto field',
+    test: function () {
+      var start = Date.now();
+      db.query('SELECT * FROM kvp', ['id', 'key', 'value'], wru.async(function (rows) {
+        start = Date.now() - start;
+        wru.log('fetched ' + rows.length + ' rows as objects in ' + (start / 1000) + ' seconds');
+        wru.assert(
+          'all good',
+          rows[0].hasOwnProperty('id') &&
+          rows[0].hasOwnProperty('key') &&
+          rows[0].hasOwnProperty('value') &&
+          rows[rows.length - 1].hasOwnProperty('id') &&
+          rows[rows.length - 1].hasOwnProperty('key') &&
+          rows[rows.length - 1].hasOwnProperty('value')
+        );
+      }));
+    }
+  },{
+    name: 'auto parsing field',
+    test: function () {
+      var start = Date.now();
+      db.query('SELECT * FROM kvp', {
+        num: parseInt,
+        whatsoever: String,
+        whatever: String
+      }, wru.async(function (rows) {
+        start = Date.now() - start;
+        wru.log('fetched ' + rows.length + ' rows as normalized objects in ' + (start / 1000) + ' seconds');
+        wru.assert(
+          'all good',
+          rows[0].hasOwnProperty('num') && typeof rows[0].num === 'number' &&
+          rows[0].hasOwnProperty('whatsoever') &&
+          rows[0].hasOwnProperty('whatever') &&
+          rows[rows.length - 1].hasOwnProperty('num') && typeof rows[rows.length - 1].num === 'number' &&
+          rows[rows.length - 1].hasOwnProperty('whatsoever') &&
+          rows[rows.length - 1].hasOwnProperty('whatever')
+        );
+      }));
+    }
+  },{
     name: 'erease file',
     test: function () {
       db.on('close', wru.async(function () {
