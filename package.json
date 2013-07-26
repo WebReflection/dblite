@@ -1,0 +1,22 @@
+{
+  "version": "0.0.0",
+  "name": "dblite",
+  "description": "",
+  "homepage": "https://github.com/WebReflection/dblite",
+  "keywords": [],
+  "author": {
+    "name": "",
+    "web": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/WebReflection/dblite.git"
+  },
+  "main": "./build/dblite.node.js",
+  "scripts": {
+    "test": "node test/.test.js"
+  },
+  "dependencies": {
+    "wru": ">= 0.0.0"
+  }
+}
