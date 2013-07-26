@@ -1,5 +1,4 @@
 dblite
 ======
-
-[![build status](https://secure.travis-ci.org/WebReflection/dblite.png)](http://travis-ci.org/WebReflection/dblite)
+a zero hassle wrapper for sqlite
 

@@ -40,8 +40,8 @@ var
   doubleQuotes = /""/g,
   SELECT = /^(?:select|SELECT|pragma|PRAGMA) /,
   INSERT = /^(?:insert|INSERT) /,
-  BEGIN = /^(?:begin|BEGIN)(?: |$)/,
-  COMMIT = /^(?:commit|COMMIT|end transaction|END TRANSACTION)(?: |$)/,
+  //BEGIN = /^(?:begin|BEGIN)(?: |$)/,
+  //COMMIT = /^(?:commit|COMMIT|end transaction|END TRANSACTION)(?: |$)/,
   SANITIZER = new RegExp("[;" + EOL.split('').map(function(c) {
     return '\\x' + ('0' + c.charCodeAt(0).toString(16)).slice(-2);
   }).join('') + "]+$"),
@@ -276,6 +276,7 @@ function sanitize(string) {
   return string.replace(SANITIZER, '') + SANITIZER_REPLACER;
 }
 
+/*
 function transaction(string, i, arr) {
   string = sanitize(string);
   if (i === 0 && !BEGIN.test(string)) {
@@ -285,6 +286,7 @@ function transaction(string, i, arr) {
   }
   return string;
 }
+*/
 
 dblite.bin = 'sqlite3';
 

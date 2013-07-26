@@ -1,12 +1,14 @@
 {
-  "version": "0.1.0",
+  "version": "0.1.1",
   "name": "dblite",
-  "description": "sqlite for node.js without gyp problems",
+  "description": "a zero hassle wrapper for sqlite",
   "homepage": "https://github.com/WebReflection/dblite",
   "keywords": [
     "sqlite",
     "simple",
     "no gymp",
+    "no hassle",
+    "wrap",
     "spawn"
   ],
   "author": {

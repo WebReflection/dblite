@@ -1,5 +1,5 @@
 //remove:
-var dblite = require('../src/dblite.js'),
+var dblite = require('../build/dblite.node.js'),
     file = require('path').join(
       require('os').tmpdir(), 'dblite.test.sqlite'
     ),
@@ -24,7 +24,7 @@ wru.test([
       db.query('.tables');
     }
   },{
-    name: 'multiple inserts',
+    name: '1000 sequential inserts',
     test: function () {
       var start = Date.now(), many = 0;
       db.on('error', wru.log);
@@ -34,6 +34,21 @@ wru.test([
       db.lastRowID('kvp', wru.async(function(data){
         wru.log(data + ' records in ' + ((Date.now() - start) / 1000) + ' seconds');
         wru.assert(1000 == data);
+      }));
+    }
+  },{
+    name: '1 transaction with 1000 inserts',
+    test: function () {
+      var start = Date.now(), many = 0;
+      db.on('error', wru.log);
+      db.query('BEGIN TRANSACTION');
+      while(many++ < 1000) {
+        db.query('INSERT INTO kvp VALUES(null, "k' + many + '", "v' + many + '")');
+      }
+      db.query('COMMIT');
+      db.lastRowID('kvp', wru.async(function(data){
+        wru.log(data + ' records in ' + ((Date.now() - start) / 1000) + ' seconds');
+        wru.assert(2000 == data);
       }));
     }
   },{
