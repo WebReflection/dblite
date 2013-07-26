@@ -103,7 +103,7 @@ dependencies:
 	rm -rf node_modules
 	mkdir node_modules
 	npm install wru
-	npm install polpetta
-	npm install uglify-js@1
+#	npm install polpetta
+#	npm install uglify-js@1
 	npm install jshint
 	npm install markdown
