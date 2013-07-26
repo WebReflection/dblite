@@ -3,8 +3,10 @@ var
   isArray = Array.isArray,
   EventEmitter = require('events').EventEmitter,
   EOL = require('os').EOL,
+  EOLENGTH = -EOL.length,
   spawn = require('child_process').spawn,
   config = {
+    encoding: 'utf8',
     cwd: process.cwd(),
     env: process.env,
     detached: true,
@@ -56,7 +58,7 @@ function dblite() {
       callback,
       fields
     ;
-    if (str.slice(-EOL.length) === EOL) {
+    if (str.slice(EOLENGTH) === EOL) {
       result = parseCVS(resultBuffer.join(''));
       resultBuffer = [];
       busy = false;
@@ -78,6 +80,35 @@ function dblite() {
       }
     }
   }
+
+  /*
+  program.stdout.on('readable', function () {
+    console.log('OUT READABLE');
+  });
+  program.stdout.on('end', function () {
+    console.log('OUT END');
+  });
+  program.stdout.on('drain', function () {
+    console.log('OUT DRAIN');
+  });
+  program.stdout.on('finish', function () {
+    console.log('OUT FINISH');
+  });
+
+  program.stdin.on('readable', function () {
+    console.log('IN READABLE');
+  });
+  program.stdin.on('end', function () {
+    console.log('IN END');
+  });
+  program.stdin.on('drain', function () {
+    console.log('IN DRAIN');
+  });
+  program.stdin.on('finish', function () {
+    console.log('IN FINISH');
+  });
+  */
+
   program.stdout.on('data', function (data) {
     if (busy) {
       resultBuffer.push('' + data);
@@ -95,7 +126,7 @@ function dblite() {
     program.kill();
   };
   // self.escape = escape;
-  // special helper
+  //* special helper
   self.lastRowID = function(table, callback) {
     self.query(
       // 'SELECT last_insert_rowid() FROM ' + table // will not work as expected
@@ -105,10 +136,13 @@ function dblite() {
       }
     );
   };
+  //*/
   self.query = function(string, params, fields, callback) {
     var wasASelect = SELECT.test(string);
     if (wasASelect) {
-      if (busy) return queue.push(arguments);
+      if (busy) {
+        return queue.push(arguments);
+      }
       busy = true;
       switch(arguments.length) {
         case 4:

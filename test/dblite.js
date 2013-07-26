@@ -135,8 +135,3 @@ wru.test([
     }
   }
 ]);
-
-
-/*
-for(var f=function(i){return function(r){if(i!=r[0][0])throw new Error(i+':'+r[0][0]);}},i=0;i<0xFFF;i++){db.query('SELECT '+i,f(i));}
-*/
