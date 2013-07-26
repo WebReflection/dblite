@@ -6,7 +6,7 @@ wru.test([
   {
     name: "main",
     test: function () {
-      wru.assert(typeof main == "object");
+      wru.assert(typeof main == "function");
       // wru.assert(0);
     }
   }

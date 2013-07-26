@@ -1,12 +1,17 @@
 {
-  "version": "0.0.0",
+  "version": "0.1.0",
   "name": "dblite",
-  "description": "",
+  "description": "sqlite for node.js without gyp problems",
   "homepage": "https://github.com/WebReflection/dblite",
-  "keywords": [],
+  "keywords": [
+    "sqlite",
+    "simple",
+    "no gymp",
+    "spawn"
+  ],
   "author": {
-    "name": "",
-    "web": ""
+    "name": "Andrea Giammarchi",
+    "web": "http://webreflection.blogspot.com/"
   },
   "repository": {
     "type": "git",

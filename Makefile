@@ -18,12 +18,12 @@ AMD = $(VAR)
 # default build task
 build:
 	make clean
-	make var
+#	make var
 	make node
-	make amd
+#	make amd
 	make test
-#	make hint
-	make size
+	make hint
+#	make size
 
 # build generic version
 var:
@@ -56,7 +56,7 @@ size:
 
 # hint built file
 hint:
-	node node_modules/jshint/bin/jshint build/$(REPO).max.js
+	node node_modules/jshint/bin/jshint build/$(REPO).node.js
 
 # clean/remove build folder
 clean:
