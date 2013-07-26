@@ -1,5 +1,5 @@
 {
-  "version": "0.1.1",
+  "version": "0.1.2",
   "name": "dblite",
   "description": "a zero hassle wrapper for sqlite",
   "homepage": "https://github.com/WebReflection/dblite",
@@ -22,8 +22,5 @@
   "main": "./build/dblite.node.js",
   "scripts": {
     "test": "node test/.test.js"
-  },
-  "dependencies": {
-    "wru": ">= 0.0.0"
   }
 }

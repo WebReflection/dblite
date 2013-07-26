@@ -24,31 +24,31 @@ wru.test([
       db.query('.tables');
     }
   },{
-    name: '1000 sequential inserts',
+    name: '100 sequential inserts',
     test: function () {
       var start = Date.now(), many = 0;
       db.on('error', wru.log);
-      while(many++ < 1000) {
+      while(many++ < 100) {
         db.query('INSERT INTO kvp VALUES(null, "k' + many + '", "v' + many + '")');
       }
       db.lastRowID('kvp', wru.async(function(data){
         wru.log(data + ' records in ' + ((Date.now() - start) / 1000) + ' seconds');
-        wru.assert(1000 == data);
+        wru.assert(100 == data);
       }));
     }
   },{
-    name: '1 transaction with 1000 inserts',
+    name: '1 transaction with 100 inserts',
     test: function () {
       var start = Date.now(), many = 0;
       db.on('error', wru.log);
       db.query('BEGIN TRANSACTION');
-      while(many++ < 1000) {
+      while(many++ < 100) {
         db.query('INSERT INTO kvp VALUES(null, "k' + many + '", "v' + many + '")');
       }
       db.query('COMMIT');
       db.lastRowID('kvp', wru.async(function(data){
         wru.log(data + ' records in ' + ((Date.now() - start) / 1000) + ' seconds');
-        wru.assert(2000 == data);
+        wru.assert(200 == data);
       }));
     }
   },{
