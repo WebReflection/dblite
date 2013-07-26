@@ -1,10 +1,4 @@
-/**
-var db = require('./src/dblite.js')('./test/dblite.test.sqlite');
-db.on('info', console.log.bind(console));
-db.on('error', console.error.bind(console));
-*/
-
-/*! (C) Andrea Giammarchi !*/
+/*! a zero hassle wrapper for sqlite by Andrea Giammarchi !*/
 var
   isArray = Array.isArray,
   EventEmitter = require('events').EventEmitter,
@@ -29,6 +23,7 @@ var
   SINGLE_QUOTES_DOUBLED = "''",
   HAS_PARAMS = /(?:\?|(?:(?:\:|\@|\$)[a-zA-Z_$]+))/,
   log = console.log.bind(console),
+  resultBuffer = [],
   paramsIndex,
   paramsArray,
   paramsObject
@@ -41,31 +36,52 @@ function dblite() {
   }
   var
     self = new EventEmitter(),
-    wasASelect = false,
     program = spawn(
       dblite.bin || 'sqlite3',
       Array.prototype.slice.call(arguments).concat('-csv'),
       config
     ),
+    queue = [],
+    busy = false,
     $callback,
     $fields;
   program.stderr.on('data', onerror);
   program.stdin.on('error', onerror);
   program.stdout.on('error', onerror);
   program.stderr.on('error', onerror);
-  program.stdout.on('data', function (data) {
-    var result;
-    if (wasASelect) {
-      if ($callback) {
-        result = parseCVS('' + data);
-        $callback.call(self, $fields ? (
-            isArray($fields) ?
-              result.map(row2object, $fields) :
-              result.map(row2parsed, parseFields($fields))
+  function ondata() {
+    var
+      str = resultBuffer[resultBuffer.length - 1] || '',
+      result,
+      callback,
+      fields
+    ;
+    if (str.slice(-EOL.length) === EOL) {
+      result = parseCVS(resultBuffer.join(''));
+      resultBuffer = [];
+      busy = false;
+      callback = $callback;
+      fields = $fields;
+      if (queue.length) {
+        self.query.apply(self, queue.shift());
+      } else {
+        $callback = null;
+      }
+      if (callback) {
+        callback.call(self, fields ? (
+            isArray(fields) ?
+              result.map(row2object, fields) :
+              result.map(row2parsed, parseFields(fields))
           ) :
           result
         );
       }
+    }
+  }
+  program.stdout.on('data', function (data) {
+    if (busy) {
+      resultBuffer.push('' + data);
+      process.nextTick(ondata);
     } else {
       self.emit('info', '' + data);
     }
@@ -78,6 +94,8 @@ function dblite() {
     program.stdin.end();
     program.kill();
   };
+  // self.escape = escape;
+  // special helper
   self.lastRowID = function(table, callback) {
     self.query(
       // 'SELECT last_insert_rowid() FROM ' + table // will not work as expected
@@ -88,8 +106,10 @@ function dblite() {
     );
   };
   self.query = function(string, params, fields, callback) {
-    wasASelect = SELECT.test(string);
+    var wasASelect = SELECT.test(string);
     if (wasASelect) {
+      if (busy) return queue.push(arguments);
+      busy = true;
       switch(arguments.length) {
         case 4:
           $callback = callback;
@@ -125,6 +145,11 @@ function dblite() {
   return self;
 }
 
+// assuming generated CVS is always like
+// 1,what,everEOL
+// with double quotes when necessary
+// 2,"what's up",everEOL
+// this parser works like a charm
 function parseCVS(output) {
   for(var
     fields = [],
@@ -180,12 +205,17 @@ function parseCVS(output) {
 
 function parseFields($fields) {
   for (var
+    current,
     fields = Object.keys($fields),
     parsers = [],
     length = fields.length,
     i = 0; i < length; i++
   ) {
-    parsers[i] = $fields[fields[i]];
+    current = $fields[fields[i]];
+    parsers[i] = current === Boolean ?
+      $Boolean :
+      current
+    ;
   }
   return {f: fields, p: parsers};
 }
@@ -204,11 +234,11 @@ function replaceString(string, params) {
 }
 
 function replaceParams(match, key) {
-  return safer(paramsObject[key]);
+  return escape(paramsObject[key]);
 }
 
 function replaceQuestions() {
-  return safer(paramsArray[paramsIndex++]);
+  return escape(paramsArray[paramsIndex++]);
 }
 
 function row2object(row) {
@@ -235,7 +265,7 @@ function row2parsed(row) {
   return out;
 }
 
-function safer(what) {
+function escape(what) {
   /*jshint eqnull: true*/
   var isNULL = what == null;
   switch (typeof what) {
@@ -258,9 +288,30 @@ function sanitize(string) {
   return string.replace(SANITIZER, '') + SANITIZER_REPLACER;
 }
 
+function $Boolean(field) {
+  switch(field.toLowerCase()) {
+    case '':
+    case '0':
+    case 'false':
+    case 'null':
+      return false;
+  }
+  return true;
+}
+
 dblite.bin = 'sqlite3';
 
 module.exports = dblite;
 
-// db.query('PRAGMA table_info(kvp)', console.log.bind(console));
-// http://www.sqlite.org/pragma.html
+/**
+var db =
+  require('./src/dblite.js')('./test/dblite.test.sqlite').
+  on('info', console.log.bind(console)).
+  on('error', console.error.bind(console)).
+  on('close', console.log.bind(console));
+
+// CORE FUNCTIONS: http://www.sqlite.org/lang_corefunc.html
+
+// PRAGMA: http://www.sqlite.org/pragma.html
+db.query('PRAGMA table_info(kvp)');
+*/

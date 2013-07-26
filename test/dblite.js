@@ -5,7 +5,7 @@ var dblite = require('../build/dblite.node.js'),
     ),
     db;
 //:remove
-
+wru.log(file);
 wru.test([
   {
     name: "main",
@@ -101,12 +101,42 @@ wru.test([
       }));
     }
   },{
+    name: 'many selects at once',
+    test: function () {
+      for(var
+        start = Date.now(),
+        length = 0xFF,
+        done = wru.async(function() {
+          wru.log(length + ' different selects in ' + ((Date.now() - start) / 1000) + ' seconds');
+          wru.assert(true);
+        }),
+        f = function(j) {
+          return function(r) {
+            if (j != r[0][0]) {
+              throw new Error(j + ':' + r[0][0]);
+            } else if (i == length && j == i - 1) {
+              done();
+            }
+          }
+        },
+        i = 0;
+        i < length; i++
+      ) {
+        db.query('SELECT '+i,f(i));
+      }
+    }
+  },{
     name: 'erease file',
     test: function () {
       db.on('close', wru.async(function () {
-        require('fs').unlinkSync(file);
         wru.assert('bye bye');
+        require('fs').unlinkSync(file);
       })).close();
     }
   }
 ]);
+
+
+/*
+for(var f=function(i){return function(r){if(i!=r[0][0])throw new Error(i+':'+r[0][0]);}},i=0;i<0xFFF;i++){db.query('SELECT '+i,f(i));}
+*/
