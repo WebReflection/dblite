@@ -20,6 +20,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 */
+/**
+var db = require('./src/dblite.js')('./test/dblite.test.sqlite');
+db.on('info', console.log.bind(console));
+db.on('error', console.error.bind(console));
+*/
+
 var
   isArray = Array.isArray,
   EventEmitter = require('events').EventEmitter,
@@ -52,6 +58,10 @@ var
 ;
 
 function dblite() {
+  function onerror(data) {
+    console.error('' + data);
+    self.emit('error', data);
+  }
   var
     self = new EventEmitter(),
     wasASelect = false,
@@ -62,17 +72,20 @@ function dblite() {
     ),
     $callback,
     $fields;
-  program.stderr.on('data', function(data) {
-    console.error('' + data);
-    self.emit('error', data);
-  });
+  program.stderr.on('data', onerror);
+  program.stdin.on('error', onerror);
+  program.stdout.on('error', onerror);
+  program.stderr.on('error', onerror);
   program.stdout.on('data', function (data) {
     var result;
     if (wasASelect) {
       if ($callback) {
         result = parseCVS('' + data);
-        $callback.call(self, $fields ?
-          result.map(row2object, $fields) :
+        $callback.call(self, $fields ? (
+            isArray($fields) ?
+              result.map(row2object, $fields) :
+              result.map(row2parsed, parseFields($fields))
+          ) :
           result
         );
       }
@@ -90,8 +103,7 @@ function dblite() {
   };
   self.lastRowID = function(table, callback) {
     self.query(
-      'SELECT ROWID FROM ? ORDER BY ROWID DESC LIMIT 1',
-      [table],
+      'SELECT ROWID FROM `' + table + '` ORDER BY ROWID DESC LIMIT 1',
       function(result){
         (callback || log)(result[0][0]);
       }
@@ -188,6 +200,18 @@ function parseCVS(output) {
   return rows;
 }
 
+function parseFields($fields) {
+  for (var
+    fields = Object.keys($fields),
+    parsers = [],
+    length = fields.length,
+    i = 0; i < length; i++
+  ) {
+    parsers[i] = fields[i];
+  }
+  return {f: fields, p: parsers};
+}
+
 function replaceString(string, params) {
   if (isArray(params)) {
     paramsIndex = 0;
@@ -220,11 +244,32 @@ function row2object(row) {
   return out;
 }
 
+function row2parsed(row) {
+  for (var
+    out = {},
+    fields = this.f,
+    parsers = this.p,
+    length = fields.length,
+    i = 0; i < length; i++
+  ) {
+    out[fields[i]] = parsers[i](row[i]);
+  }
+  return out;
+}
+
 function safer(what) {
-  return typeof what === 'string' ?
-    "'" + what.replace(SINGLE_QUOTES, SINGLE_QUOTES_DOUBLED) + "'" :
-    what
-  ;
+  switch (typeof what) {
+    case 'object':
+      what = JSON.stringify(what);
+      /* falls through */
+    case 'string':
+      return "'" + what.replace(SINGLE_QUOTES, SINGLE_QUOTES_DOUBLED) + "'";
+    case 'boolean':
+      return what ? '1' : '0';
+    case 'number':
+      if (isFinite(what)) return what;
+  }
+  throw new Error('unsupported data');
 }
 
 function sanitize(string) {
