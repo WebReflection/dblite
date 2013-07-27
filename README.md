@@ -11,8 +11,27 @@ I've created `dblite` module because there's still not a simple and straight for
 Generally speaking all linux based distributions like [Arch Linux](https://www.archlinux.org), where is not always that easy to `node-gyp` a module and add dependencies that work, can now use this battle tested wrap and perform basic to advanced sqlite operations.
 
 
+### Bootstrap
+To install dblite simply `npm install dblite` then in node:
+```javascript
+var dblite = require('dblite'),
+    db = dblite('/folder/to/file.sqlite');
+
+// ready to go, i.e.
+db.query('.databases');
+db.query(
+  'SELECT * FROM users WHERE pass = ?',
+  [pass],
+  function (rows) {
+    var user = rows.length && rows[0];
+  }
+);
+```
+By default the `dblite` function uses **sqlite3 as exacutable**. If you need to change the path simply update `dblite.bin = "/usr/local/bin/sqlite3";` before invoking the function.
+
+
 ### API
-Right now a created `db` has 3 methods: `.query()`, `.lastRowID()`, and `.close()`.
+Right now a created `EventEmitter` `db` instance has 3 extra methods: `.query()`, `.lastRowID()`, and `.close()`.
 
 The `.lastRowID(table, callback(rowid))` helper simplifies a common operation with SQL tables after inserts, handful as shortcut for the following query:
 `SELECT ROWID FROM `table` ORDER BY ROWID DESC LIMIT 1`.
@@ -83,7 +102,7 @@ db.query('SELECT * FROM test');
 ```
 
 #### The params:Array|Object
-If the SQL string is **not a command** and **contains special chars** such `?`, `:key`, `$key`, or `@key` properties, these will be replaced accordingly with the `params` `Array` or `Object` that, in this case, MUST be present.
+If the SQL string **contains special chars** such `?`, `:key`, `$key`, or `@key` properties, these will be replaced accordingly with the `params` `Array` or `Object` that, in this case, MUST be present.
 ```javascript
 // params as Array
 db.query('SELECT * FROM test WHERE id = ?', [1]);
@@ -180,6 +199,30 @@ As soon as results are fully pushed to the output the module parses this result 
 The callback is **always the last specified parameter**, if any, or the implicit equivalent of `console.log.bind(console)`.
 Latter case is simply helpful to operate directly via `node` **console** and see results without bothering writing a callback each `.query()` call.
 
+#### Really, Zero Ambiguity
+If you are thinking it's hard to understand which is `params` and which is `fields` please think twice.
+First of all, it's very easy to spot special chars in the `SQL` statement. If present, params is mandatory and used.
+Secondly, if an object has functions as value, it's obviously a `fields` object, 'cause `params` cannot contains functions since these are not compatible with `JSON` serialization, explained right away!
+
+#### JSON Serialization With fields:Array|Object
+If one field value is not scalar (boolean, number, string, null) `JSON.stringify` is performed in order to save data.
+This helps lazy developers that don't want to pre parse every field and let `dblite` do the magic.
+```javascript
+// test has two fields, id and value
+db.query('INSERT INTO test VALUES(?, ?)', [
+  123,
+  {name: 'dblite', rate: 'awesome'} // value serialized
+]);
+
+// use the fields to parse back the object
+db.query('SELECT * FROM test WHERE id = ?', [123], {
+  value: JSON.parse // value unserialized
+}, function (rows) {
+  var record = rows[0];
+  console.log(record.name); // dblite
+  console.log(record.value); // awesome
+});
+```
 
 ### Raspberry Pi Performance
 This is the output generated after a `make test` call in this repo folder within Arch Linux for RPi.
@@ -239,3 +282,18 @@ passes: 1, fails: 0, errors: 0
 ------------------------------
 ```
 If an SD card can do this good, I guess any other environment should not have problems here ;-)
+
+### F.A.Q.
+Here a list of probably common Q&A about this module. Please do not hesitate to ask me more, if necessary, thanks.
+
+  * **How Does It Work?** `dblite` uses a [spawned](http://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options) version of the `sqlite3` executable. It could theoretically work with any other SQL like database but it's tested with `sqlite3-shell` only
+  * **Does It Spawn Per Each Query?** this is a quick one: **NO**! `dblite` spawns once per each database file where usually there is only one database file opened per time.
+  * **How About Memory And Performance?** Accordingly with `node` manual:
+    > These child Nodes are still whole new instances of V8.
+    > Assume at least 30ms startup and 10mb memory for each new Node.
+    > That is, you cannot create many thousands of them.
+    Since `dblite` spawns only once, there is a little overhead during the database initialization but that's pretty much it, the amount of RAM increases with the amount of data we save or retrieve from the database. The above **Raspberry Pi Benchmark** should ensure that with most common operation, and using transactions where possible, latency and RAM aren't a real issue.
+  * **Why Not The Native One?** I had some difficulty installing this [node-sqlite3 module](https://github.com/developmentseed/node-sqlite3#name) due `node-gyp` incompatibilities with some **ARM** based device in both *Debian* and *ArchLinux*. Since I really needed an sqlite manager for the next version of [polpetta](https://github.com/WebReflection/polpetta#က-polpetta) which aim is to have a complete, lightweight, and super fast web server in many embedded hardware such RPi, Cubieboard, and others, and since I needed something able to work with multiple core too, I've decided to try this road wrapping the native, easy to install and update, `sqlite3` shell client and do everything I need. So far, so good I would say ;-)
+
+### License
+The usual Mit Style, thinking about the [WTFPL](http://en.wikipedia.org/wiki/WTFPL) though ... stay tuned for updates.
