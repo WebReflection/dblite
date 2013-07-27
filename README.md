@@ -63,7 +63,7 @@ db.query(SQL, params:Array|Object, fields:Array|Object, callback:Function)
 ```
 All above combinations are [tested properly in this file](test/dblite.js) together with many other tests able to make `dblite` robust enough and ready to be used.
 
-Please note how `params` is always before `fields` and/or `callback` if `fields` is missing, just as reminder that order is left to right accordingly with what are trying to do.
+Please note how `params` is always before `fields` and/or `callback` if `fields` is missing, just as reminder that order is left to right accordingly with what we are trying to do.
 
 Following detailed explanation per each parameter.
 
@@ -199,12 +199,7 @@ As soon as results are fully pushed to the output the module parses this result 
 The callback is **always the last specified parameter**, if any, or the implicit equivalent of `console.log.bind(console)`.
 Latter case is simply helpful to operate directly via `node` **console** and see results without bothering writing a callback each `.query()` call.
 
-#### Really, Zero Ambiguity
-If you are thinking it's hard to understand which is `params` and which is `fields` please think twice.
-First of all, it's very easy to spot special chars in the `SQL` statement. If present, params is mandatory and used.
-Secondly, if an object has functions as value, it's obviously a `fields` object, 'cause `params` cannot contains functions since these are not compatible with `JSON` serialization, explained right away!
-
-#### JSON Serialization With fields:Array|Object
+#### Extra Bonus: JSON Serialization With fields:Array|Object
 If one field value is not scalar (boolean, number, string, null) `JSON.stringify` is performed in order to save data.
 This helps lazy developers that don't want to pre parse every field and let `dblite` do the magic.
 ```javascript
@@ -294,6 +289,7 @@ Here a list of probably common Q&A about this module. Please do not hesitate to 
     > That is, you cannot create many thousands of them.
     Since `dblite` spawns only once, there is a little overhead during the database initialization but that's pretty much it, the amount of RAM increases with the amount of data we save or retrieve from the database. The above **Raspberry Pi Benchmark** should ensure that with most common operation, and using transactions where possible, latency and RAM aren't a real issue.
   * **Why Not The Native One?** I had some difficulty installing this [node-sqlite3 module](https://github.com/developmentseed/node-sqlite3#name) due `node-gyp` incompatibilities with some **ARM** based device in both *Debian* and *ArchLinux*. Since I really needed an sqlite manager for the next version of [polpetta](https://github.com/WebReflection/polpetta#က-polpetta) which aim is to have a complete, lightweight, and super fast web server in many embedded hardware such RPi, Cubieboard, and others, and since I needed something able to work with multiple core too, I've decided to try this road wrapping the native, easy to install and update, `sqlite3` shell client and do everything I need. So far, so good I would say ;-)
+  * **Isn't `params` and `fields` an ambiguous choice?** At the very beginning I wasn't sure myself if that would have worked as API choice but later on I've changed my mind. First of all, it's very easy to spot special chars in the `SQL` statement. If present, params is mandatory and used, as easy as that. Secondly, if an object has functions as value, it's obviously a `fields` object, 'cause `params` cannot contains functions since these are not compatible with `JSON` serialization, neither meaningful for the database. The only case where `fields` might be confused with `params` is when no `params` has been specified, and `fields` is an `Array`. In this case I believe you are the same one that wrote the SQL too and know upfront if there are fields to retrieve from `params` or not so this is actually a *non real-world* problem and as soon as you try this API you'll realize it feels intuitive and right.
 
 ### License
 The usual Mit Style, thinking about the [WTFPL](http://en.wikipedia.org/wiki/WTFPL) though ... stay tuned for updates.
