@@ -76,7 +76,8 @@ var dblite = require('dblite'),
 db.on('info', function (data) {
   // generic info, not a SELECT result
   // neither a PRAGMA one - just commands
-  console.log(String(data));
+  console.log(data);
+  // note: data is a string
 });
 
 db.query('.show');

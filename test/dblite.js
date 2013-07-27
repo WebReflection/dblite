@@ -19,7 +19,7 @@ wru.test([
       db.query('CREATE TABLE IF NOT EXISTS `kvp` (id INTEGER PRIMARY KEY, key TEXT, value TEXT)');
       db.on('info', wru.async(function (data) {
         db.removeListener('table exists', arguments.callee);
-        wru.assert('table exists', /^kvp\b/.test('' + data));
+        wru.assert('table exists', /^kvp\b/m.test('' + data));
       }));
       db.query('.tables');
     }

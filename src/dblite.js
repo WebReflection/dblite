@@ -67,9 +67,16 @@ function dblite() {
     ),
     queue = [],
     busy = false,
+    wasSelect = false,
     $callback,
     $fields
   ;
+
+  function next() {
+    if (queue.length) {
+      self.query.apply(self, queue.shift());
+    }
+  }
 
   function onerror(data) {
     console.error('' + data);
@@ -82,21 +89,19 @@ function dblite() {
   program.stderr.on('error', onerror);
 
   program.stdout.on('data', function (data) {
-    var result, callback, fields;
-    if (busy) {
-      selectResult += data;
-      if (selectResult.slice(SUPER_SECRET_LENGTH) === SUPER_SECRET) {
-        result = parseCVS(
-          selectResult.slice(0, SUPER_SECRET_LENGTH)
-        );
-        selectResult = '';
+    var str, result, callback, fields;
+    selectResult += data;
+    if (selectResult.slice(SUPER_SECRET_LENGTH) === SUPER_SECRET) {
+      str = selectResult.slice(0, SUPER_SECRET_LENGTH);
+      selectResult = '';
+      busy = false;
+      if (wasSelect) {
+        wasSelect = busy;
+        result = parseCVS(str);
         callback = $callback;
         fields = $fields;
         $callback = $fields = null;
-        busy = false;
-        if (queue.length) {
-          self.query.apply(self, queue.shift());
-        }
+        next();
         if (callback) {
           callback.call(self, fields ? (
               isArray(fields) ?
@@ -106,9 +111,10 @@ function dblite() {
             result
           );
         }
+      } else {
+        next();
+        self.emit('info', EOL + str);
       }
-    } else {
-      self.emit('info', data);
     }
   });
   program.on('close', function (code) {
@@ -132,8 +138,10 @@ function dblite() {
   };
   //*/
   self.query = function(string, params, fields, callback) {
-    if (SELECT.test(string)) {
-      if (busy) return queue.push(arguments);
+    if (busy) return queue.push(arguments);
+    wasSelect = SELECT.test(string);
+    if (wasSelect) {
+      // SELECT and PRAGMA makes `dblite` busy
       busy = true;
       switch(arguments.length) {
         case 4:
@@ -180,15 +188,17 @@ function dblite() {
         // specially for those cases where no result is shown
         sanitize(string) + '.print ' + SUPER_SECRET
       );
+    } else if (string[0] === '.') {
+      // .commands make `dblite` busy
+      busy = true;
+      program.stdin.write(string + EOL + '.print ' + SUPER_SECRET);
     } else {
-      if(HAS_PARAMS.test(string)) {
-        string = replaceString(string, params);
-      }
-      program.stdin.write(
-        string[0] === '.' ?
-          string + EOL :
-          sanitize(string)
-      );
+      // all other statements are OK, no need to be busy
+      // since no output is shown at all (errors ... eventually)
+      program.stdin.write(sanitize(HAS_PARAMS.test(string) ?
+        replaceString(string, params) :
+        string
+      ));
     }
   };
   return self;
