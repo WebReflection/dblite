@@ -34,7 +34,7 @@ By default the `dblite` function uses **sqlite3 as exacutable**. If you need to 
 Right now a created `EventEmitter` `db` instance has 3 extra methods: `.query()`, `.lastRowID()`, and `.close()`.
 
 The `.lastRowID(table, callback(rowid))` helper simplifies a common operation with SQL tables after inserts, handful as shortcut for the following query:
-`SELECT ROWID FROM `table` ORDER BY ROWID DESC LIMIT 1`.
+`SELECT ROWID FROM ``table`` ORDER BY ROWID DESC LIMIT 1`.
 
 The method `.close()` does exactly what it suggests: it closes the database connection.
 Please note that it is **not possible to perform other operations once it has been closed**.
