@@ -1,6 +1,7 @@
 /*! a zero hassle wrapper for sqlite by Andrea Giammarchi !*/
 var
   isArray = Array.isArray,
+  crypto = require('crypto'),
   EventEmitter = require('events').EventEmitter,
   EOL = require('os').EOL,
   EOLENGTH = -EOL.length,
@@ -26,17 +27,38 @@ var
   HAS_PARAMS = /(?:\?|(?:(?:\:|\@|\$)[a-zA-Z_$]+))/,
   log = console.log.bind(console),
   resultBuffer = [],
+  selectResult = '',
   paramsIndex,
   paramsArray,
   paramsObject
 ;
 
+/**
+ * var db = dblite('filename.sqlite'):EventEmitter;
+ *
+ * db.query(              thismethod has **many** overloads where almost everything is optional
+ *
+ *  SQL:string,           only necessary field. Accepts a query or a command such `.databases`
+ *
+ *  params:Array|Object,  optional, if specified replaces SQL parts with this object
+ *                        db.query('INSERT INTO table VALUES(?, ?)', [null, 'content']);
+ *                        db.query('INSERT INTO table VALUES(:id, :value)', {id:null, value:'content'});
+ *
+ *  fields:Array|Object,  optional, if specified is used to normalize the query result with named fields.
+ *                        db.query('SELECT table.a, table.other FROM table', ['a', 'b']);
+ *                        [{a:'first value', b:'second'},{a:'row2 value', b:'row2'}]
+ *
+ *                        
+ *                        db.query('SELECT table.a, table.other FROM table', ['a', 'b']);
+ *                        [{a:'first value', b:'second'},{a:'row2 value', b:'row2'}]
+ *  callback:Function
+ * );
+ */
 function dblite() {
-  function onerror(data) {
-    console.error('' + data);
-    self.emit('error', data);
-  }
+
   var
+    SUPER_SECRET = '---' + crypto.randomBytes(64).toString('base64') + '---' + EOL,
+    SUPER_SECRET_LENGTH = -SUPER_SECRET.length,
     self = new EventEmitter(),
     program = spawn(
       dblite.bin || 'sqlite3',
@@ -46,75 +68,47 @@ function dblite() {
     queue = [],
     busy = false,
     $callback,
-    $fields;
+    $fields
+  ;
+
+  function onerror(data) {
+    console.error('' + data);
+    self.emit('error', data);
+  }
+
   program.stderr.on('data', onerror);
   program.stdin.on('error', onerror);
   program.stdout.on('error', onerror);
   program.stderr.on('error', onerror);
-  function ondata() {
-    var
-      str = resultBuffer[resultBuffer.length - 1] || '',
-      result,
-      callback,
-      fields
-    ;
-    if (str.slice(EOLENGTH) === EOL) {
-      result = parseCVS(resultBuffer.join(''));
-      resultBuffer = [];
-      busy = false;
-      callback = $callback;
-      fields = $fields;
-      if (queue.length) {
-        self.query.apply(self, queue.shift());
-      } else {
-        $callback = null;
-      }
-      if (callback) {
-        callback.call(self, fields ? (
-            isArray(fields) ?
-              result.map(row2object, fields) :
-              result.map(row2parsed, parseFields(fields))
-          ) :
-          result
-        );
-      }
-    }
-  }
-
-  /*
-  program.stdout.on('readable', function () {
-    console.log('OUT READABLE');
-  });
-  program.stdout.on('end', function () {
-    console.log('OUT END');
-  });
-  program.stdout.on('drain', function () {
-    console.log('OUT DRAIN');
-  });
-  program.stdout.on('finish', function () {
-    console.log('OUT FINISH');
-  });
-
-  program.stdin.on('readable', function () {
-    console.log('IN READABLE');
-  });
-  program.stdin.on('end', function () {
-    console.log('IN END');
-  });
-  program.stdin.on('drain', function () {
-    console.log('IN DRAIN');
-  });
-  program.stdin.on('finish', function () {
-    console.log('IN FINISH');
-  });
-  */
 
   program.stdout.on('data', function (data) {
+    var result, callback, fields;
     if (busy) {
-      resultBuffer.push('' + data);
-      process.nextTick(ondata);
+      selectResult += data;
+      if (selectResult.slice(SUPER_SECRET_LENGTH) === SUPER_SECRET) {
+        result = parseCVS(
+          selectResult.slice(0, SUPER_SECRET_LENGTH)
+        );
+        selectResult = '';
+        callback = $callback;
+        fields = $fields;
+        $callback = $fields = null;
+        busy = false;
+        if (queue.length) {
+          self.query.apply(self, queue.shift());
+        }
+        if (callback) {
+          callback.call(self, fields ? (
+              isArray(fields) ?
+                result.map(row2object, fields) :
+                result.map(row2parsed, parseFields(fields))
+            ) :
+            result
+          );
+        }
+      }
     } else {
-      self.emit('info', '' + data);
+      self.emit('info', data);
     }
   });
   program.on('close', function (code) {
@@ -138,11 +132,8 @@ function dblite() {
   };
   //*/
   self.query = function(string, params, fields, callback) {
-    var wasASelect = SELECT.test(string);
-    if (wasASelect) {
-      if (busy) {
-        return queue.push(arguments);
-      }
+    if (SELECT.test(string)) {
+      if (busy) return queue.push(arguments);
       busy = true;
       switch(arguments.length) {
         case 4:
@@ -151,30 +142,54 @@ function dblite() {
           string = replaceString(string, params);
           break;
         case 3:
-          $callback = fields;
-          if (HAS_PARAMS.test(string)) {
-            $fields = null;
-            string = replaceString(string, params);
+          if (typeof fields == 'function') {
+            $callback = fields;
+            if (HAS_PARAMS.test(string)) {
+              $fields = null;
+              string = replaceString(string, params);
+            } else {
+              $fields = params;
+            }
           } else {
-            $fields = params;
+            $callback = log;
+            $fields = fields;
+            string = replaceString(string, params);
           }
           break;
         case 2:
-          $callback = params;
-          $fields = null;
+          if (typeof params == 'function') {
+            $fields = null;
+            $callback = params;
+          } else {
+            $callback = log;
+            if (HAS_PARAMS.test(string)) {
+              $fields = null;
+              string = replaceString(string, params);
+            } else {
+              $fields = params;
+            }
+          }
           break;
         default:
           $callback = log;
           $fields = null;
           break;
       }
-    } else if(HAS_PARAMS.test(string)) {
-      string = replaceString(string, params);
+      program.stdin.write(
+        // trick to always know when the console is not busy anymore
+        // specially for those cases where no result is shown
+        sanitize(string) + '.print ' + SUPER_SECRET
+      );
+    } else {
+      if(HAS_PARAMS.test(string)) {
+        string = replaceString(string, params);
+      }
+      program.stdin.write(
+        string[0] === '.' ?
+          string + EOL :
+          sanitize(string)
+      );
     }
-    program.stdin.write(wasASelect || string[0] !== '.' ?
-      sanitize(string) :
-      string + EOL
-    );
   };
   return self;
 }
@@ -339,7 +354,7 @@ module.exports = dblite;
 
 /**
 var db =
-  require('./src/dblite.js')('./test/dblite.test.sqlite').
+  require('./build/dblite.node.js')('./test/dblite.test.sqlite').
   on('info', console.log.bind(console)).
   on('error', console.error.bind(console)).
   on('close', console.log.bind(console));

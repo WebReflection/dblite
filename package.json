@@ -1,5 +1,5 @@
 {
-  "version": "0.1.3",
+  "version": "0.1.2",
   "name": "dblite",
   "description": "a zero hassle wrapper for sqlite",
   "homepage": "https://github.com/WebReflection/dblite",

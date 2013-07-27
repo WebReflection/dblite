@@ -126,6 +126,46 @@ wru.test([
       }
     }
   },{
+    name: 'dblite.query() arguments',
+    test: function () {
+      db.query('SELECT 1', wru.async(function (data) {
+        wru.assert('just one', data[0][0] == 1);
+        db.query('SELECT ?', [2], wru.async(function (data) {
+          wru.assert('just two', data[0][0] == 2);
+          db.query('SELECT 1', {id:Number}, wru.async(function (data) {
+            wru.assert('still two', data[0].id === 1);
+            db.query('SELECT ?', [2], {id:Number}, wru.async(function (data) {
+              wru.assert('three', data[0].id === 2);
+              // implicit output via bound console.log
+              db.query('SELECT 1');
+              db.query('SELECT ?', [2]);
+              db.query('SELECT 1', {id:Number});
+              db.query('SELECT ?', [2], {id:Number});
+              setTimeout(wru.async(function(){
+                wru.assert('check the output, should be like the following');
+                /*
+                [ [ '1' ] ]
+                [ [ '2' ] ]
+                [ { id: 1 } ]
+                [ { id: 2 } ]
+                */
+              }), 500);
+            }));
+          }));
+        }));
+      }));
+    }
+  },{
+    name: 'utf-8',
+    test: function () {
+      var utf8 = '¥ · £ · € · $ · ¢ · ₡ · ₢ · ₣ · ₤ · ₥ · ₦ · ₧ · ₨ · ₩ · ₪ · ₫ · ₭ · ₮ · ₯ · ₹';
+      db.query('INSERT INTO kvp VALUES(null, ?, ?)', [utf8, utf8]);
+      db.query('SELECT value FROM kvp WHERE key = ? AND value = ?', [utf8, utf8], wru.async(function(rows){
+        wru.assert(rows.length === 1 && rows[0][0] === utf8);
+        console.log(utf8);
+      }));
+    }
+  },{
     name: 'erease file',
     test: function () {
       db.on('close', wru.async(function () {
