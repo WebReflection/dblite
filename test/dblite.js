@@ -126,7 +126,7 @@ wru.test([
       }
     }
   },{
-    name: 'dblite.query() arguments',
+    name: 'db.query() arguments',
     test: function () {
       db.query('SELECT 1', wru.async(function (data) {
         wru.assert('just one', data[0][0] == 1);

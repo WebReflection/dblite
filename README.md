@@ -43,23 +43,23 @@ Being an `EventEmitter` instance, the database variable will be notified with th
 
 
 ### Understanding The .query() Method
-The main role in this module is played by the `dblite.query()` method, a method rich in overloads all with perfect and natural meaning.
+The main role in this module is played by the `db.query()` method, a method rich in overloads all with perfect and natural meaning.
 
 The amount of parameters goes from one to four, left to right, where left is the input going through the right which is the eventual output.
 
 All parameters are optionals except the SQL one, where if non specified, `console.log(arguments)` will be used as implicit callback if none has been specified as last parameters used when `.query()` was invoked.
 
 
-### dblite.query() Possible Combinations
+### db.query() Possible Combinations
 ```javascript
-dblite.query(SQL)
-dblite.query(SQL, callback:Function)
-dblite.query(SQL, params:Array|Object)
-dblite.query(SQL, fields:Array|Object)
-dblite.query(SQL, params:Array|Object, callback:Function)
-dblite.query(SQL, fields:Array|Object, callback:Function)
-dblite.query(SQL, params:Array|Object, fields:Array|Object)
-dblite.query(SQL, params:Array|Object, fields:Array|Object, callback:Function)
+db.query(SQL)
+db.query(SQL, callback:Function)
+db.query(SQL, params:Array|Object)
+db.query(SQL, fields:Array|Object)
+db.query(SQL, params:Array|Object, callback:Function)
+db.query(SQL, fields:Array|Object, callback:Function)
+db.query(SQL, params:Array|Object, fields:Array|Object)
+db.query(SQL, params:Array|Object, fields:Array|Object, callback:Function)
 ```
 All above combinations are [tested properly in this file](test/dblite.js) together with many other tests able to make `dblite` robust enough and ready to be used.
 
@@ -263,7 +263,7 @@ many selects at once
 different selects in 0.608 seconds
 passes: 1, fails: 0, errors: 0
 ------------------------------
-dblite.query() arguments
+db.query() arguments
 [ [ '1' ] ]
 [ [ '2' ] ]
 [ { id: 1 } ]
