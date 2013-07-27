@@ -1,12 +1,14 @@
+dblite
+======
 a zero hassle wrapper for sqlite
 
 
 ### The What And The Why
 I've created `dblite` module because there's still not a simple and straight forward or standard way to have [sqlite](http://www.sqlite.org) in [node.js](http://nodejs.org) without requiring to re-compile, re-build, download sources a part or install dependencies instead of simply `apt-get install sqlite3` or `pacman -S sqlite` in your \*nix system.
 
-`dblite` has been created with portability, simplicity, and reasonable performance for **embedded Hardware** such [Raspberry Pi](http://www.raspberrypi.org) and [Cubieboard](http://cubieboard.org), or generally speaking all linux based distributions like [Arch Linux](https://www.archlinux.org) where is not always that easy to `node-gyp` a module and add dependencies that work.
+`dblite` has been created with portability, simplicity, and reasonable performance for **embedded Hardware** such [Raspberry Pi](http://www.raspberrypi.org) and [Cubieboard](http://cubieboard.org) in mind.
 
-You have `node`, You have `sqlite`, that's all you need to `require('dblite')` and start managing your SQLite database file.
+Generally speaking all linux based distributions like [Arch Linux](https://www.archlinux.org), where is not always that easy to `node-gyp` a module and add dependencies that work, can now use this battle tested wrap and perform basic to advanced sqlite operations.
 
 
 ### API
@@ -130,10 +132,10 @@ db.query('SELECT * FROM test', {
   {key: 2, value: 'something else'} // rowN
 ]
 ```
-More complex functions can be passed without problems:
+More complex validators/transformers can be passed without problems:
 ```javascript
 // same query using fields as Object
-db.query('SELECT * FROM users', {
+db.query('SELECT * FROM `table.users`', {
   id: Number,
   name: String,
   adult: Boolean,
@@ -144,3 +146,96 @@ db.query('SELECT * FROM users', {
   }
 });
 ```
+
+#### The params:Array|Object AND The fields:Array|Object
+Not a surprise we can combine both params, using the left to right order input to output so **params first**!
+```javascript
+// same query using params AND fields
+db.query('SELECT * FROM test WHERE id = :id', {
+  id: 1
+},{
+  key: Number,
+  value: String
+});
+
+// same as...
+db.query('SELECT * FROM test WHERE id = ?', [1], ['key', 'value']);
+// same as...
+db.query('SELECT * FROM test WHERE id = ?', [1], {
+  key: Number,
+  value: String
+});
+// same as...
+db.query('SELECT * FROM test WHERE id = :id', {
+  id: 1
+}, [
+  'key', 'value'
+]);
+```
+
+#### The callback:Function
+When a `SELECT` or a `PRAGMA` `SQL` is executed the module puts itself in a *waiting for results* state.
+As soon as results are fully pushed to the output the module parses this result and send it to the specified callback.
+
+The callback is **always the last specified parameter**, if any, or the implicit equivalent of `console.log.bind(console)`.
+Latter case is simply helpful to operate directly via `node` **console** and see results without bothering writing a callback each `.query()` call.
+
+
+### Raspberry Pi Performance
+This is the output generated after a `make test` call in this repo folder within Arch Linux for RPi.
+```
+npm test
+
+> dblite@0.1.2 test /home/dblite
+> node test/.test.js
+
+/home/dblite/dblite.test.sqlite
+------------------------------
+main
+passes: 1, fails: 0, errors: 0
+------------------------------
+create table if not exists
+passes: 1, fails: 0, errors: 0
+------------------------------
+100 sequential inserts
+100 records in 3.067 seconds
+passes: 1, fails: 0, errors: 0
+------------------------------
+1 transaction with 100 inserts
+200 records in 0.178 seconds
+passes: 1, fails: 0, errors: 0
+------------------------------
+auto escape
+passes: 1, fails: 0, errors: 0
+------------------------------
+auto field
+fetched 201 rows as objects in 0.029 seconds
+passes: 1, fails: 0, errors: 0
+------------------------------
+auto parsing field
+fetched 201 rows as normalized objects in 0.038 seconds
+passes: 1, fails: 0, errors: 0
+------------------------------
+many selects at once
+different selects in 0.608 seconds
+passes: 1, fails: 0, errors: 0
+------------------------------
+dblite.query() arguments
+[ [ '1' ] ]
+[ [ '2' ] ]
+[ { id: 1 } ]
+[ { id: 2 } ]
+passes: 5, fails: 0, errors: 0
+------------------------------
+utf-8
+¥ · £ · € · $ · ¢ · ₡ · ₢ · ₣ · ₤ · ₥ · ₦ · ₧ · ₨ · ₩ · ₪ · ₫ · ₭ · ₮ · ₯ · ₹
+passes: 1, fails: 0, errors: 0
+------------------------------
+erease file
+passes: 1, fails: 0, errors: 0
+
+------------------------------
+          15 Passes
+------------------------------
+```
+If an SD card can do this good, I guess any other environment should not have problems here ;-)
