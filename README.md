@@ -212,11 +212,13 @@ db.query('INSERT INTO test VALUES(?, ?)', [
 
 // use the fields to parse back the object
 db.query('SELECT * FROM test WHERE id = ?', [123], {
+  id: Number,
   value: JSON.parse // value unserialized
 }, function (rows) {
   var record = rows[0];
-  console.log(record.name); // dblite
-  console.log(record.value); // awesome
+  console.log(record.id); // 123
+  console.log(record.value.name); // "dblite"
+  console.log(record.value.rate); // "awesome""
 });
 ```
 
