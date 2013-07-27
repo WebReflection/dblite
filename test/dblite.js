@@ -26,6 +26,8 @@ wru.test([
   },{
     name: '100 sequential inserts',
     test: function () {
+      var timeout = wru.timeout;
+      wru.timeout = 20000;
       var start = Date.now(), many = 0;
       db.on('error', wru.log);
       while(many++ < 100) {
@@ -34,6 +36,7 @@ wru.test([
       db.lastRowID('kvp', wru.async(function(data){
         wru.log(data + ' records in ' + ((Date.now() - start) / 1000) + ' seconds');
         wru.assert(100 == data);
+        wru.timeout = timeout;
       }));
     }
   },{
