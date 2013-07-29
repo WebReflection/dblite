@@ -295,6 +295,15 @@ Here a list of probably common Q&A about this module. Please do not hesitate to 
     Since `dblite` spawns only once, there is a little overhead during the database initialization but that's pretty much it, the amount of RAM increases with the amount of data we save or retrieve from the database. The above **Raspberry Pi Benchmark** should ensure that with most common operation, and using transactions where possible, latency and RAM aren't a real issue.
   * **Why Not The Native One?** I had some difficulty installing this [node-sqlite3 module](https://github.com/developmentseed/node-sqlite3#name) due `node-gyp` incompatibilities with some **ARM** based device in both *Debian* and *ArchLinux*. Since I really needed an sqlite manager for the next version of [polpetta](https://github.com/WebReflection/polpetta#က-polpetta) which aim is to have a complete, lightweight, and super fast web server in many embedded hardware such RPi, Cubieboard, and others, and since I needed something able to work with multiple core too, I've decided to try this road wrapping the native, easy to install and update, `sqlite3` shell client and do everything I need. So far, so good I would say ;-)
   * **Isn't `params` and `fields` an ambiguous choice?** At the very beginning I wasn't sure myself if that would have worked as API choice but later on I've changed my mind. First of all, it's very easy to spot special chars in the `SQL` statement. If present, params is mandatory and used, as easy as that. Secondly, if an object has functions as value, it's obviously a `fields` object, 'cause `params` cannot contains functions since these are not compatible with `JSON` serialization, neither meaningful for the database. The only case where `fields` might be confused with `params` is when no `params` has been specified, and `fields` is an `Array`. In this case I believe you are the same one that wrote the SQL too and know upfront if there are fields to retrieve from `params` or not so this is actually a *non real-world* problem and as soon as you try this API you'll realize it feels intuitive and right.
+  * **Are Transactions Supported?** ... **YES**, transactions are supported simply performing multiple queries as you would do in *sqlite3* shell:
+  ```javascript
+    db.query('BEGIN TRANSACTION');
+    for(var i = 0; i < 100; i++) {
+      db.query('INSERT INTO table VALUES(?, ?)', [null, Math.random()]);
+    }
+    db.query('COMMIT');
+  ```
+  The test file has a transaction with 100 records in it, [have a look](test/dblite.js).
 
 ### License
 The usual Mit Style, thinking about the [WTFPL](http://en.wikipedia.org/wiki/WTFPL) though ... stay tuned for updates.
