@@ -26,7 +26,6 @@ var
   crypto = require('crypto'),
   EventEmitter = require('events').EventEmitter,
   EOL = require('os').EOL,
-  EOLENGTH = -EOL.length,
   spawn = require('child_process').spawn,
   config = {
     encoding: 'utf8',
@@ -37,7 +36,6 @@ var
   },
   doubleQuotes = /""/g,
   SELECT = /^(?:select|SELECT|pragma|PRAGMA) /,
-  INSERT = /^(?:insert|INSERT) /,
   SANITIZER = new RegExp("[;" + EOL.split('').map(function(c) {
     return '\\x' + ('0' + c.charCodeAt(0).toString(16)).slice(-2);
   }).join('') + "]+$"),

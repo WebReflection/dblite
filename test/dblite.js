@@ -27,7 +27,7 @@ wru.test([
     name: '100 sequential inserts',
     test: function () {
       var timeout = wru.timeout;
-      wru.timeout = 20000;
+      wru.timeout = 30000; // might be very slow
       var start = Date.now(), many = 0;
       db.on('error', wru.log);
       while(many++ < 100) {
