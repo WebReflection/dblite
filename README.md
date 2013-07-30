@@ -1,6 +1,15 @@
 dblite
 ======
 a zero hassle wrapper for sqlite
+```javascript
+var dblite = require('dblite'),
+    db = dblite('file.name');
+
+// asynchronous, fast, and ...
+db.query('SELECT * FROM table', function(rows) {
+  // ... that easy!
+});
+```
 
 
 ### The What And The Why
@@ -304,6 +313,10 @@ Here a list of probably common Q&A about this module. Please do not hesitate to 
     db.query('COMMIT');
   ```
   The test file has a transaction with 100 records in it, [have a look](test/dblite.js).
+  * **Can I Connect To A `:memory:` Database?** well, you can do anything you would do with `sqlite3` shell so **YES**
+  ```javascript
+  var db = dblite(':memory:'); // that's it!
+  ```
 
 ### License
 The usual Mit Style, thinking about the [WTFPL](http://en.wikipedia.org/wiki/WTFPL) though ... stay tuned for updates.

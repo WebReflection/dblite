@@ -270,8 +270,11 @@ function parseFields($fields) {
   ) {
     current = $fields[fields[i]];
     parsers[i] = current === Boolean ?
-      $Boolean :
-      current
+      $Boolean : (
+        current === Date ?
+          $Date :
+          current
+      )
     ;
   }
   return {f: fields, p: parsers};
@@ -354,6 +357,10 @@ function $Boolean(field) {
       return false;
   }
   return true;
+}
+
+function $Date(field) {
+  return new Date(field);
 }
 
 dblite.bin = 'sqlite3';
