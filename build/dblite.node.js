@@ -88,6 +88,7 @@ function dblite() {
     queue = [],
     busy = false,
     wasSelect = false,
+    dontParseCVS = false,
     $callback,
     $fields
   ;
@@ -116,8 +117,8 @@ function dblite() {
       selectResult = '';
       busy = false;
       if (wasSelect) {
-        wasSelect = busy;
-        result = parseCVS(str);
+        result = dontParseCVS ? str : parseCVS(str);
+        wasSelect = dontParseCVS = busy;
         callback = $callback;
         fields = $fields;
         $callback = $fields = null;
@@ -141,22 +142,36 @@ function dblite() {
     self.emit('close', code);
   });
   program.unref();
+
+  // kill the process so don't use it
+  // unless you are sure it's OK to close it
+  // (i.e. don't forget operations in the middle)
   self.close = function() {
     program.stdin.end();
     program.kill();
   };
-  // self.escape = escape;
-  //* special helper
+
+  // SELECT last_insert_rowid() FROM table might not work as expected
+  // This method makes the operation atomic and reliable
   self.lastRowID = function(table, callback) {
     self.query(
-      // 'SELECT last_insert_rowid() FROM ' + table // will not work as expected
       'SELECT ROWID FROM `' + table + '` ORDER BY ROWID DESC LIMIT 1',
       function(result){
         (callback || log)(result[0][0]);
       }
     );
+    return self;
   };
-  //*/
+
+  // Handy if for some reason data has to be passed around
+  // as string instead of being serialized and deserialized
+  // as Array of Arrays. Don't use if not needed.
+  self.plain = function() {
+    dontParseCVS = true;
+    return self.query.apply(self, arguments);
+  };
+
+  // main logic/method/entry point
   self.query = function(string, params, fields, callback) {
     if (busy) return queue.push(arguments);
     wasSelect = SELECT.test(string);
@@ -208,18 +223,24 @@ function dblite() {
         // specially for those cases where no result is shown
         sanitize(string) + '.print ' + SUPER_SECRET
       );
-    } else if (string[0] === '.') {
-      // .commands make `dblite` busy
-      busy = true;
-      program.stdin.write(string + EOL + '.print ' + SUPER_SECRET);
     } else {
-      // all other statements are OK, no need to be busy
-      // since no output is shown at all (errors ... eventually)
-      program.stdin.write(sanitize(HAS_PARAMS.test(string) ?
-        replaceString(string, params) :
-        string
-      ));
+      if (dontParseCVS) {
+        dontParseCVS = false;
+        throw new Error('not a select');
+      } else if (string[0] === '.') {
+        // .commands make `dblite` busy
+        busy = true;
+        program.stdin.write(string + EOL + '.print ' + SUPER_SECRET);
+      } else {
+        // all other statements are OK, no need to be busy
+        // since no output is shown at all (errors ... eventually)
+        program.stdin.write(sanitize(HAS_PARAMS.test(string) ?
+          replaceString(string, params) :
+          string
+        ));
+      }
     }
+    return self;
   };
   return self;
 }
@@ -295,7 +316,7 @@ function parseFields($fields) {
       $Boolean : (
         current === Date ?
           $Date :
-          current
+          current || String
       )
     ;
   }
@@ -349,20 +370,26 @@ function row2parsed(row) {
 
 function escape(what) {
   /*jshint eqnull: true*/
-  var isNULL = what == null;
+  var isNULL = what == null,
+      str;
   switch (typeof what) {
+    // Object are simply stringified
     case 'object':
-      what = isNULL ? 'null' : JSON.stringify(what);
+      str = isNULL ? 'null' : JSON.stringify(what);
       /* falls through */
     case 'string':
-      return isNULL ? what : (
+      return isNULL ? str : (
+        // all strings are safely escaped
         "'" + what.replace(SINGLE_QUOTES, SINGLE_QUOTES_DOUBLED) + "'"
       );
+    // SQLite has no Boolean type
     case 'boolean':
-      return what ? '1' : '0';
+      return what ? '1' : '0'; // 1 => true, 0 => false
     case 'number':
-      if (isFinite(what)) return what;
+      // only finite numbers can be stored
+      if (isFinite(what)) return '' + what;
   }
+  // all other cases
   throw new Error('unsupported data');
 }
 
@@ -385,7 +412,16 @@ function $Date(field) {
   return new Date(field);
 }
 
+// public static
+
+// which sqlite3 executable ?
 dblite.bin = 'sqlite3';
+
+// how to manually parse CVS data ?
+dblite.parseCVS = parseCVS;
+
+// how to escape data ?
+dblite.escape = escape;
 
 module.exports = dblite;
 

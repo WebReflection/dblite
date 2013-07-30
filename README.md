@@ -10,6 +10,7 @@ db.query('SELECT * FROM table', function(rows) {
   // ... that easy!
 });
 ```
+More in [the related blogpost](http://webreflection.blogspot.com/2013/07/dblite-sqlite3-for-nodejs-made-easy.html) and here too :-)
 
 
 ### The What And The Why
