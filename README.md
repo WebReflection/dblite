@@ -1,5 +1,6 @@
 dblite
 ======
+[![build status](https://secure.travis-ci.org/WebReflection/dblite.png 'travis')](http://travis-ci.org/WebReflection/dblite)
 a zero hassle wrapper for sqlite
 ```javascript
 var dblite = require('dblite'),
