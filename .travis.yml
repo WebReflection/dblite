@@ -1,6 +1,6 @@
 language: node_js
 before_script:
-  - which sqlite3
+  - which sqlite
 node_js:
   - 0.8
   - 0.9
