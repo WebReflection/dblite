@@ -1,9 +1,5 @@
 dblite
 ======
-[![build status](https://secure.travis-ci.org/WebReflection/dblite.png 'travis')](http://travis-ci.org/WebReflection/dblite)
-not a real fail: trying to fix this in travis. Use `make dependencies` and `make test` after cloning to test yourself ;-)
-
-
 a zero hassle wrapper for sqlite
 ```javascript
 var dblite = require('dblite'),
