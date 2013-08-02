@@ -1,4 +1,4 @@
-.PHONY: build var node amd size hint clean test web preview pages dependencies
+.PHONY: bench build var node amd size hint clean test web preview pages dependencies
 
 # repository name
 REPO = dblite
@@ -23,6 +23,7 @@ build:
 #	make amd
 	make test
 	make hint
+	make bench
 #	make size
 
 # build generic version
@@ -49,6 +50,13 @@ amd:
 	cat template/copyright build/no-copy.$(REPO).amd.js >build/$(REPO).amd.js
 	rm build/no-copy.$(REPO).max.amd.js
 	rm build/no-copy.$(REPO).amd.js
+
+bench:  
+	node benchmark/bench.sqlite3.js
+	node benchmark/bench.dblite.js
+	rm bench.sqlite3.db
+	rm bench.dblite.db
+
 
 size:
 	wc -c build/$(REPO).max.js
@@ -103,6 +111,7 @@ dependencies:
 	rm -rf node_modules
 	mkdir node_modules
 	npm install wru
+	npm install sqlite3
 #	npm install polpetta
 #	npm install uglify-js@1
 	npm install jshint@2.1.6
