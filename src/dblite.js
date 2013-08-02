@@ -13,6 +13,7 @@ var
     stdio: ['pipe', 'pipe', 'pipe']
   },
   doubleQuotes = /""/g,
+  DECIMAL = /^[1-9][0-9]*$/,
   SELECT = /^(?:select|SELECT|pragma|PRAGMA) /,
   SANITIZER = new RegExp("[;" + EOL.split('').map(function(c) {
     return '\\x' + ('0' + c.charCodeAt(0).toString(16)).slice(-2);
@@ -387,7 +388,9 @@ function $Boolean(field) {
 }
 
 function $Date(field) {
-  return new Date(field);
+  return new Date(
+    DECIMAL.test(field) ? parseInt(field, 10) : field
+  );
 }
 
 // public static
