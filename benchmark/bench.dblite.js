@@ -41,11 +41,13 @@ db.query('SELECT * FROM users_login', function (rows) {
     }
     if (!--i) {
       db.on('close', function () {
-        console.log('completed in ' + ((Date.now() - startTime) / 1000) + ' seconds');
-        console.log('found ' + found + ' random matches out of ' + total + ' possibilities');
-        if (found) {
-          console.log('last row looked like this');
-          console.log(lastValidRow);
+        if (process.argv[2] == 1) {
+          console.log('completed in ' + ((Date.now() - startTime) / 1000) + ' seconds');
+          console.log('found ' + found + ' random matches out of ' + total + ' possibilities');
+          if (found) {
+            console.log('last row looked like this');
+            console.log(lastValidRow);
+          }
         }
       }).close();
     }

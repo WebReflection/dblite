@@ -158,7 +158,7 @@ function dblite() {
     self.query(
       'SELECT ROWID FROM `' + table + '` ORDER BY ROWID DESC LIMIT 1',
       function(result){
-        (callback || log)(result[0][0]);
+        (callback || log).call(self, result[0][0]);
       }
     );
     return self;

@@ -52,8 +52,17 @@ amd:
 	rm build/no-copy.$(REPO).amd.js
 
 bench:  
+	echo ''
+	node benchmark/bench.sqlite3.js 1
 	node benchmark/bench.sqlite3.js
+	node benchmark/bench.sqlite3.js
+	node benchmark/bench.sqlite3.js
+	node benchmark/bench.sqlite3.js 1
+	node benchmark/bench.dblite.js 1
 	node benchmark/bench.dblite.js
+	node benchmark/bench.dblite.js
+	node benchmark/bench.dblite.js
+	node benchmark/bench.dblite.js 1
 	rm bench.sqlite3.db
 	rm bench.dblite.db
 
