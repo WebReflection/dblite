@@ -18,20 +18,22 @@ db.query('SELECT * FROM users_login', function (rows) {
       lastValidRow;
   db.query('BEGIN');
   rows.forEach(function (row) {
-    db.query([
-      'REPLACE INTO users_info (id, email, birthday)',
-      'VALUES (',
-        ':id,',
-        'COALESCE((SELECT users_info.email FROM users_info WHERE id = :id), :email),',
-        'COALESCE((SELECT users_info.birthday FROM users_info WHERE id = :id), :bday)',
-      ')'
-      ].join(' '), {
+    db.query(
+      this, {
         id: row[0],
         email: 'user_' + row[0] + '@email.com',
         bday: parseInt(Math.random() * startTime)
       }
     );
-  });
+  },[
+    'REPLACE INTO users_info (id, email, birthday)',
+    'VALUES (',
+      ':id,',
+      'COALESCE((SELECT users_info.email FROM users_info WHERE id = :id), :email),',
+      'COALESCE((SELECT users_info.birthday FROM users_info WHERE id = :id), :bday)',
+    ')'
+    ].join(' ')
+  );
   db.query('COMMIT');
 
   function onUserInfo(rows) {

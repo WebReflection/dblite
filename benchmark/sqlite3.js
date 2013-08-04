@@ -6,16 +6,16 @@ db.serialize(function() {
   db.run('BEGIN');
   db.run('CREATE TABLE IF NOT EXISTS users_login (id INTEGER PRIMARY KEY, name TEXT, pass TEXT)');
   db.run('CREATE TABLE IF NOT EXISTS users_info (id INTEGER PRIMARY KEY, email TEXT, birthday INTEGER)');
-
-  var stmt = db.prepare("INSERT INTO users_login VALUES (:id, :name, :pass)");
-  for (var i = 0; i < 1000; i++) {
+  stmt = db.prepare("INSERT INTO users_login VALUES (:id, :name, :pass)");
+  for (var stmt, i = 0; i < 1000; i++) {
     stmt.run({
       ':id': null,
       ':name': 'user_' + i,
       ':pass': ('pass_' + i + '_' + Math.random()).slice(0, 11)
     });
   }
-  stmt.finalize(function () {
+  stmt.finalize();
+  db.run('COMMIT', function () {
     db.all('SELECT * FROM users_login', function (err, rows) {
       var total = rows.length;
       db.serialize(function() {
@@ -30,13 +30,16 @@ db.serialize(function() {
           ].join(' ')
         );
         rows.forEach(function (row) {
-          stmt.run({
-            ':id': row[0],
-            ':email': 'user_' + row[0] + '@email.com',
-            ':bday': parseInt(Math.random() * startTime)
-          });
+          stmt.run(
+            {
+              ':id': row.id,
+              ':email': 'user_' + row.id + '@email.com',
+              ':bday': parseInt(Math.random() * startTime)
+            }
+          );
         });
-        stmt.finalize(function () {
+        stmt.finalize();
+        db.run('COMMIT', function () {
           function onUserInfo(err, row) {
             if (!--i) {
               if (process.argv[2] == 1) {
@@ -56,12 +59,8 @@ db.serialize(function() {
             if (row) {
               found++;
               lastValidRow = row;
-              if (!row.email) {
-                row.email = 'MISMATCHING DATA';
-              }
-              if (!row.birthday) {
-                row.birthday = new Date;
-              }
+              row.bday = new Date(row.birthday);
+              delete row.birthday;
             }
           }
 
@@ -82,10 +81,8 @@ db.serialize(function() {
             );
           }
         });
-        db.run('COMMIT');
       });
     });
-    db.run('COMMIT');
   });
 
 });

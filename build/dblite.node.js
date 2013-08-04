@@ -89,7 +89,7 @@ function dblite() {
     queue = [],
     busy = false,
     wasSelect = false,
-    dontParseCVS = false,
+    dontParseCSV = false,
     $callback,
     $fields
   ;
@@ -118,8 +118,8 @@ function dblite() {
       selectResult = '';
       busy = false;
       if (wasSelect) {
-        result = dontParseCVS ? str : parseCVS(str);
-        wasSelect = dontParseCVS = busy;
+        result = dontParseCSV ? str : parseCSV(str);
+        wasSelect = dontParseCSV = busy;
         callback = $callback;
         fields = $fields;
         $callback = $fields = null;
@@ -168,7 +168,7 @@ function dblite() {
   // as string instead of being serialized and deserialized
   // as Array of Arrays. Don't use if not needed.
   self.plain = function() {
-    dontParseCVS = true;
+    dontParseCSV = true;
     return self.query.apply(self, arguments);
   };
 
@@ -225,8 +225,8 @@ function dblite() {
         sanitize(string) + '.print ' + SUPER_SECRET
       );
     } else {
-      if (dontParseCVS) {
-        dontParseCVS = false;
+      if (dontParseCSV) {
+        dontParseCSV = false;
         throw new Error('not a select');
       } else if (string[0] === '.') {
         // .commands make `dblite` busy
@@ -246,12 +246,12 @@ function dblite() {
   return self;
 }
 
-// assuming generated CVS is always like
+// assuming generated CSV is always like
 // 1,what,everEOL
 // with double quotes when necessary
 // 2,"what's up",everEOL
 // this parser works like a charm
-function parseCVS(output) {
+function parseCSV(output) {
   for(var
     fields = [],
     rows = [],
@@ -420,8 +420,8 @@ function $Date(field) {
 // which sqlite3 executable ?
 dblite.bin = 'sqlite3';
 
-// how to manually parse CVS data ?
-dblite.parseCVS = parseCVS;
+// how to manually parse CSV data ?
+dblite.parseCSV = parseCSV;
 
 // how to escape data ?
 dblite.escape = escape;
