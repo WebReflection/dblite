@@ -3,7 +3,7 @@ var
   isArray = Array.isArray,
   crypto = require('crypto'),
   EventEmitter = require('events').EventEmitter,
-  EOL = require('os').EOL,
+  EOL = '\n', //require('os').EOL,
   spawn = require('child_process').spawn,
   config = {
     encoding: 'utf8',
