@@ -3,7 +3,8 @@ var
   isArray = Array.isArray,
   crypto = require('crypto'),
   EventEmitter = require('events').EventEmitter,
-  EOL = '\n', //require('os').EOL,
+  EOL = require('os').EOL,
+  EOL_LENGTH = EOL.length,
   spawn = require('child_process').spawn,
   config = {
     encoding: 'utf8',
@@ -96,7 +97,7 @@ function dblite() {
       selectResult = '';
       busy = false;
       if (wasSelect) {
-        result = dontParseCSV ? str : parseCSV(str);
+        result = dontParseCSV ? str : dblite.parseCSV(str);
         wasSelect = dontParseCSV = busy;
         callback = $callback;
         fields = $fields;
@@ -251,10 +252,13 @@ function parseCSV(output) {
         do {
           iNext = output.indexOf('"', current = j + 1);
           switch(output[j = iNext + 1]) {
+            case EOL[0]:
+              if (EOL_LENGTH === 2 && output[j + 1] !== EOL[1]) {
+                break;
+              }
+              /* falls through */
             case ',':
-            case EOL:
               loop = false;
-              break;
           }
         } while(loop);
         str = output.slice(i + 1, iNext++).replace(doubleQuotes, '"');
@@ -265,15 +269,19 @@ function parseCSV(output) {
         str = output.slice(i, iNext = endLine < iNext ?
           endLine : (
             iNext < 0 ?
-              length - 1 :
+              length - EOL_LENGTH :
               iNext
           )
         );
         break;
     }
     fields[index++] = str;
-    i = iNext;
-    if (output[i] === EOL) {
+    if (output[i = iNext] === EOL[0] && (
+        EOL_LENGTH === 1 || (
+          output[i + 1] === EOL[1] && ++i
+        )
+      )
+    ) {
       rows[rindex++] = fields;
       fields = [];
       index = 0;
