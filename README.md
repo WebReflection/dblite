@@ -57,8 +57,7 @@ The main role in this module is played by the `db.query()` method, a method rich
 
 The amount of parameters goes from one to four, left to right, where left is the input going through the right which is the eventual output.
 
-All parameters are optionals except the SQL one, where if non specified, `console.log(arguments)` will be used as implicit callback if none has been specified as last parameters used when `.query()` was invoked.
-
+All parameters are optionals except the SQL one.
 
 ### db.query() Possible Combinations
 ```javascript
