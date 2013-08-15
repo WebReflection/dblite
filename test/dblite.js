@@ -164,8 +164,18 @@ wru.test([
       var utf8 = '¥ · £ · € · $ · ¢ · ₡ · ₢ · ₣ · ₤ · ₥ · ₦ · ₧ · ₨ · ₩ · ₪ · ₫ · ₭ · ₮ · ₯ · ₹';
       db.query('INSERT INTO kvp VALUES(null, ?, ?)', [utf8, utf8]);
       db.query('SELECT value FROM kvp WHERE key = ? AND value = ?', [utf8, utf8], wru.async(function(rows){
-        wru.assert(rows.length === 1 && rows[0][0] === utf8);
         console.log(utf8);
+        wru.assert(rows.length === 1 && rows[0][0] === utf8);
+      }));
+    }
+  },{
+    name: 'new lines and disturbing queries',
+    test: function () {
+      // beware SQLite converts \r\n into \n
+      var wut = '"\'\n\'\'\\\\;\n;\'"\'";"\'\r\'"\n\r@\n--'; // \r\n
+      db.query('INSERT INTO kvp VALUES(null, ?, ?)', [wut, wut]);
+      db.query('SELECT value FROM kvp WHERE key = ? AND value = ?', [wut, wut], wru.async(function(rows){
+        wru.assert(rows.length === 1 && rows[0][0] === wut);
       }));
     }
   },{
@@ -175,6 +185,32 @@ wru.test([
         wru.assert('bye bye');
         require('fs').unlinkSync(file);
       })).close();
+    }
+  },{
+    name: 'does not create :memory: file',
+    test: function () {
+      dblite(':memory:')
+        .query('CREATE TABLE test (id INTEGER PRIMARY KEY)')
+        .query('INSERT INTO test VALUES (null)')
+        .query('SELECT * FROM test', wru.async(function () {
+          this.close();
+          wru.assert('file was NOT created', !require('fs').existsSync(':memory:'));
+        }))
+      ;
+    }
+  },{
+    name: 'cannot close twice',
+    test: function () {
+      var times = 0;
+      var db = dblite(':memory:');
+      db.on('close', function () {
+        times++;
+      });
+      db.close();
+      db.close();
+      setTimeout(wru.async(function () {
+        wru.assert(times === 1);
+      }), 500);
     }
   }
 ]);
