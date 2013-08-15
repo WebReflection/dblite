@@ -77,18 +77,12 @@ Please note how `params` is always before `fields` and/or `callback` if `fields`
 Following detailed explanation per each parameter.
 
 #### The SQL:string
-This string [accepts any query understood by SQLite](http://www.sqlite.org/lang.html) plus it accepts all commands that regular SQLite shell would accept such `.databases`, `.tables`, `.show` and all others passing through the specified `info` listener, if any.
+This string [accepts any query understood by SQLite](http://www.sqlite.org/lang.html) plus it accepts all commands that regular SQLite shell would accept such `.databases`, `.tables`, `.show` and all others passing through the specified `info` listener, if any, using just the console as fallback otherwise.
 ```javascript
 var dblite = require('dblite'),
     db = dblite('./db.sqlite');
 
-db.on('info', function (data) {
-  // generic info, not a SELECT result
-  // neither a PRAGMA one - just commands
-  console.log(data);
-  // note: data is a string
-});
-
+// will call the implicit `info` console.log
 db.query('.show');
 /* will console.log something like:
 
@@ -228,6 +222,23 @@ db.query('SELECT * FROM test WHERE id = ?', [123], {
   console.log(record.id); // 123
   console.log(record.value.name); // "dblite"
   console.log(record.value.rate); // "awesome""
+});
+```
+
+### Handling Infos And Errors
+The `EventEmitter` will notify any listener attached to `info` or `error` accordingly with the current status.
+```javascript
+db.on('info', function (data) {
+  // show data returned by special syntax
+  // such: .databases .tables .show and others
+  console.log(data);
+  // by default, it does the same
+});
+
+db.on('error', function (message) {
+  // same as `info` but for errors
+  console.error(message);
+  // by default, it does the same
 });
 ```
 

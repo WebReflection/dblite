@@ -20,10 +20,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 */
+/*!
+Copyright (C) 2013 by WebReflection
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+*/
 /*! a zero hassle wrapper for sqlite by Andrea Giammarchi !*/
 var
   isArray = Array.isArray,
   crypto = require('crypto'),
+  path = require('path'),
   EventEmitter = require('events').EventEmitter,
   EOL = require('os').EOL,
   EOL_LENGTH = EOL.length,
@@ -48,6 +71,7 @@ var
   SINGLE_QUOTES_DOUBLED = "''",
   HAS_PARAMS = /(?:\?|(?:(?:\:|\@|\$)[a-zA-Z_$]+))/,
   log = console.log.bind(console),
+  bin = ['sqlite3'],
   resultBuffer = [],
   selectResult = '',
   paramsIndex,
@@ -79,13 +103,19 @@ var
 function dblite() {
 
   var
-    SUPER_SECRET = '---' + crypto.randomBytes(64).toString('base64') + '---' + EOL,
+    SUPER_SECRET =  '---' +
+                    crypto.randomBytes(64).toString('base64') +
+                    '---' +
+                    EOL,
     SUPER_SECRET_LENGTH = -SUPER_SECRET.length,
     self = new EventEmitter(),
+    args = Array.prototype.slice.call(arguments),
     program = spawn(
-      dblite.bin || 'sqlite3',
-      Array.prototype.slice.call(arguments).concat('-csv'),
-      config
+      bin[bin.length - 1],
+      // normalize file path in any case
+      ((args[0] = path.resolve(args[0])), args).concat('-csv'),
+      // be sure the dir is the right one
+      ((config.cwd = bin.slice(0, -1).join(path.sep) || process.cwd()), config)
     ),
     queue = [],
     busy = false,
@@ -102,8 +132,11 @@ function dblite() {
   }
 
   function onerror(data) {
-    console.error('' + data);
-    self.emit('error', data);
+    if (self.listeners('error').length) {
+      self.emit('error', '' + data);
+    } else {
+      console.error('' + data);
+    }
   }
 
   program.stderr.on('data', onerror);
@@ -136,7 +169,11 @@ function dblite() {
         }
       } else {
         next();
-        self.emit('info', EOL + str);
+        if (self.listeners('info').length) {
+          self.emit('info', EOL + str);
+        } else {
+          console.log(EOL + str);
+        }
       }
     }
   });
@@ -426,7 +463,29 @@ function $Date(field) {
 // public static
 
 // which sqlite3 executable ?
-dblite.bin = 'sqlite3';
+Object.defineProperty(
+  dblite,
+  'bin',
+  {
+    get: function () {
+      // normalized string if was a path
+      return bin.join(path.sep);
+    },
+    set: function (value) {
+      var isPath = -1 < value.indexOf(path.sep);
+      if (isPath) {
+        // resolve the path
+        value = path.resolve(value);
+        // verify it exists
+        if (!require('fs').existsSync(value)) {
+          throw 'invalid executable: ' + value;
+        }
+      }
+      // assign as Array in any case
+      bin = value.split(path.sep);
+    }
+  }
+);
 
 // how to manually parse CSV data ?
 dblite.parseCSV = parseCSV;
