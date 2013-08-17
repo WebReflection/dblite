@@ -306,7 +306,7 @@ function dblite() {
     // it does not make sense to execute anything after
     // the program is being closed
     if (notWorking) return onerror('closing'), self;
-    // if something is still going on in the sqlite3 sheel
+    // if something is still going on in the sqlite3 shell
     // the progcess is flagged as busy. Just queue other operations
     if (busy) return queue.push(arguments);
     // if a SELECT or a PRAGMA ...
@@ -384,7 +384,7 @@ function dblite() {
         sanitize(string) + 'SELECT ' + SUPER_SECRET_SELECT
       );
     } else {
-      // if db.plain() was used but this is not an error
+      // if db.plain() was used but this is not a SELECT or PRAGMA
       // something is wrong with the logic since no result
       // was expected anyhow
       if (dontParseCSV) {
