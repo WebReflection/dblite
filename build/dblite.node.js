@@ -52,7 +52,9 @@ var
   // each dblite(fileName) instance is an EventEmitter
   EventEmitter = require('events').EventEmitter,
   // what kind of End Of Line we have here ?
-  EOL = require('os').EOL,
+  EOL = require('os').EOL || (
+    process.platform === 'win32' ? '\r\n' : '\n'
+  ),
   // what's EOL length? Used to properly parse data
   EOL_LENGTH = EOL.length,
   // each dblite instance spawns a process once
