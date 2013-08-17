@@ -113,7 +113,7 @@ function dblite() {
     // the "spawned once" program, will be used for the whole session
     program = spawn(
       // executable only, folder needs to be specified a part
-      bin[bin.length - 1],
+      bin.length === 1 ? bin[0] : ('.' + path.sep + bin[bin.length - 1]),
       // normalize file path if not :memory:
       normalizeFirstArgument(
         // it is possible to eventually send extra sqlite3 args

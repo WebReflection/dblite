@@ -1,6 +1,6 @@
 {
-  "version": "0.2.4",
-  "engine": "node >= 8.0.0",
+  "version": "0.2.5",
+  "engine": "node >= 0.8.0",
   "name": "dblite",
   "description": "a zero hassle wrapper for sqlite",
   "homepage": "https://github.com/WebReflection/dblite",
