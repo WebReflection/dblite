@@ -17,7 +17,7 @@ More in [the related blogpost](http://webreflection.blogspot.com/2013/07/dblite-
 
 
 ### The What And The Why
-I've created `dblite` module because there's still not a simple and straight forward or standard way to have [sqlite](http://www.sqlite.org) in [node.js](http://nodejs.org) without requiring to re-compile, re-build, download sources a part or install dependencies instead of simply `apt-get install sqlite3` or `pacman -S sqlite` in your \*nix system.
+I've created `dblite` module because there's still not a simple and straight forward or standard way to have [sqlite](http://www.sqlite.org) in [node.js](http://nodejs.org) without requiring to re-compile, re-build, download sources a part or install dependencies instead of simply `apt-get install sqlite3` or `pacman -S sqlite3` in your \*nix system.
 
 `dblite` has been created with portability, simplicity, and reasonable performance for **embedded Hardware** such [Raspberry Pi](http://www.raspberrypi.org) and [Cubieboard](http://cubieboard.org) in mind.
 
