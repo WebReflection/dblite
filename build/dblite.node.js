@@ -122,10 +122,10 @@ function dblite() {
     // this is the delimiter of each sqlite3 shell command
     SUPER_SECRET =  '---' +
                     crypto.randomBytes(64).toString('base64') +
-                    '---' +
-                    EOL,
+                    '---',
+    SUPER_SECRET_SELECT = '"' + SUPER_SECRET + '";' + EOL,
     // used to check the end of a buffer
-    SUPER_SECRET_LENGTH = -SUPER_SECRET.length,
+    SUPER_SECRET_LENGTH = -(SUPER_SECRET.length + EOL_LENGTH),
     // the incrementally concatenated buffer
     // cleaned up as soon as the current command has been completed
     selectResult = '',
@@ -176,6 +176,8 @@ function dblite() {
     // recycled variable for fields operation
     $fields
   ;
+
+  SUPER_SECRET += EOL;
 
   // as long as there's something else to do ...
   function next() {
@@ -399,7 +401,7 @@ function dblite() {
       program.stdin.write(
         // trick to always know when the console is not busy anymore
         // specially for those cases where no result is shown
-        sanitize(string) + '.print ' + SUPER_SECRET
+        sanitize(string) + 'SELECT ' + SUPER_SECRET_SELECT
       );
     } else {
       // if db.plain() was used but this is not an error
@@ -414,7 +416,7 @@ function dblite() {
         busy = true;
         // same trick with the secret to emit('info', resultAsString)
         // once everything is done
-        program.stdin.write(string + EOL + '.print ' + SUPER_SECRET);
+        program.stdin.write(string + EOL + 'SELECT ' + SUPER_SECRET_SELECT);
       } else {
         // all other statements are OK, no need to make the shell busy
         // since no output is shown at all (errors ... eventually)
