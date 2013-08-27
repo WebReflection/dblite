@@ -51,9 +51,15 @@ var
   path = require('path'),
   // each dblite(fileName) instance is an EventEmitter
   EventEmitter = require('events').EventEmitter,
+  // used to perform some fallback
+  WIN32 = process.platform === 'win32',
+  // what kind of Path Separator we have here ?
+  PATH_SEP = path.sep || (
+    WIN32 ? '\\' : '/'
+  ),
   // what kind of End Of Line we have here ?
   EOL = require('os').EOL || (
-    process.platform === 'win32' ? '\r\n' : '\n'
+    WIN32 ? '\r\n' : '\n'
   ),
   // what's EOL length? Used to properly parse data
   EOL_LENGTH = EOL.length,
@@ -137,7 +143,7 @@ function dblite() {
     // the "spawned once" program, will be used for the whole session
     program = spawn(
       // executable only, folder needs to be specified a part
-      bin.length === 1 ? bin[0] : ('.' + path.sep + bin[bin.length - 1]),
+      bin.length === 1 ? bin[0] : ('.' + PATH_SEP + bin[bin.length - 1]),
       // normalize file path if not :memory:
       normalizeFirstArgument(
         // it is possible to eventually send extra sqlite3 args
@@ -147,7 +153,7 @@ function dblite() {
       // be sure the dir is the right one
       {
         // the right folder is important or sqlite3 won't work
-        cwd: bin.slice(0, -1).join(path.sep) || process.cwd(),
+        cwd: bin.slice(0, -1).join(PATH_SEP) || process.cwd(),
         env: process.env, // same env is OK
         encoding: 'utf8', // utf8 is OK
         detached: true,   // asynchronous
@@ -328,7 +334,7 @@ function dblite() {
     // it does not make sense to execute anything after
     // the program is being closed
     if (notWorking) return onerror('closing'), self;
-    // if something is still going on in the sqlite3 sheel
+    // if something is still going on in the sqlite3 shell
     // the progcess is flagged as busy. Just queue other operations
     if (busy) return queue.push(arguments);
     // if a SELECT or a PRAGMA ...
@@ -406,7 +412,7 @@ function dblite() {
         sanitize(string) + 'SELECT ' + SUPER_SECRET_SELECT
       );
     } else {
-      // if db.plain() was used but this is not an error
+      // if db.plain() was used but this is not a SELECT or PRAGMA
       // something is wrong with the logic since no result
       // was expected anyhow
       if (dontParseCSV) {
@@ -659,10 +665,10 @@ Object.defineProperty(
   {
     get: function () {
       // normalized string if was a path
-      return bin.join(path.sep);
+      return bin.join(PATH_SEP);
     },
     set: function (value) {
-      var isPath = -1 < value.indexOf(path.sep);
+      var isPath = -1 < value.indexOf(PATH_SEP);
       if (isPath) {
         // resolve the path
         value = path.resolve(value);
@@ -672,7 +678,7 @@ Object.defineProperty(
         }
       }
       // assign as Array in any case
-      bin = value.split(path.sep);
+      bin = value.split(PATH_SEP);
     }
   }
 );

@@ -53,17 +53,7 @@ amd:
 
 bench:  
 	echo ''
-	node benchmark/sqlite3.js 1
-	node benchmark/sqlite3.js
-	node benchmark/sqlite3.js
-	node benchmark/sqlite3.js
-	node benchmark/sqlite3.js 1
 	node benchmark/dblite.js 1
-	node benchmark/dblite.js
-	node benchmark/dblite.js
-	node benchmark/dblite.js
-	node benchmark/dblite.js 1
-	rm bench.sqlite3.db
 	rm bench.dblite.db
 
 
