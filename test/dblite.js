@@ -1,9 +1,11 @@
 //remove:
 var dblite = require('../build/dblite.node.js'),
     file = require('path').join(
-      require('os').tmpdir(), 'dblite.test.sqlite'
+      (require('os').tmpdir || function(){return '.'})(),
+      'dblite.test.sqlite'
     ),
     db;
+if (typeof wru === 'undefined') wru = require('wru');
 //:remove
 wru.log(file);
 wru.test([
@@ -194,7 +196,7 @@ wru.test([
         .query('INSERT INTO test VALUES (null)')
         .query('SELECT * FROM test', wru.async(function () {
           this.close();
-          wru.assert('file was NOT created', !require('fs').existsSync(':memory:'));
+          wru.assert('file was NOT created', !(require('fs').existsSync || require('path').existsSync)(':memory:'));
         }))
       ;
     }

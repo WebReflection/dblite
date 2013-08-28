@@ -165,6 +165,16 @@ function dblite() {
 
   SUPER_SECRET += EOL;
 
+  // when program is killed or closed for some reason
+  // the dblite object needs to be notified too
+  function close(code) {
+    if (self.listeners('close').length) {
+      self.emit('close', code);
+    } else {
+      log('bye bye');
+    }
+  }
+
   // as long as there's something else to do ...
   function next() {
     if (queue.length) {
@@ -258,18 +268,14 @@ function dblite() {
     }
   });
 
-  // when program is killed or closed for some reason
-  // the dblite object needs to be notified too
-  program.on('close', function (code) {
-    if (self.listeners('close').length) {
-      self.emit('close', code);
-    } else {
-      log('bye bye');
-    }
-  });
-
   // detach the program from this one
-  program.unref();
+  // node 0.6 has not unref
+  if (program.unref) {
+    program.on('close', close);
+    program.unref();
+  } else {
+    program.stdout.on('close', close);
+  }
 
   // safely closes the process
   // will emit 'close' once done
