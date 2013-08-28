@@ -1,5 +1,6 @@
 {
   "version": "0.2.8",
+  "license" : "MIT",
   "engine": "node >= 0.6.0",
   "name": "dblite",
   "description": "a zero hassle wrapper for sqlite",
