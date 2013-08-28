@@ -110,7 +110,7 @@ dependencies:
 	rm -rf node_modules
 	mkdir node_modules
 	npm install wru
-	npm install sqlite3
+# npm install sqlite3
 #	npm install polpetta
 #	npm install uglify-js@1
 	npm install jshint@2.1.6
