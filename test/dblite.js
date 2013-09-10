@@ -306,5 +306,45 @@ wru.test([
         .on('close', Object)
       ;
     }
+  },{
+    name: 'null value test',
+    test: function () {
+      dblite(':memory:')
+        .query('CREATE TABLE test (v TEXT)')
+        .query('INSERT INTO test VALUES (null)')
+        .query('SELECT * FROM test', wru.async(function (rows) {
+          wru.assert('as Array', rows[0][0] === '');
+          this
+            .query('.headers ON')
+            .query('SELECT * FROM test', wru.async(function (rows) {
+              this.close();
+              wru.assert('as Object', rows[0].v === '');
+            }))
+          ;
+        }))
+        .on('close', Object)
+      ;
+    }
+  },{
+    name: 'right order of events',
+    test: function () {
+      dblite(':memory:')
+        .query('.headers ON')
+        .query('CREATE TABLE test (v TEXT)')
+        .query('INSERT INTO test VALUES ("value")')
+        .query('SELECT * FROM test', wru.async(function (rows) {
+          wru.assert('as Object', rows[0].v === 'value');
+          // now it should not have headers
+          this
+            .query('SELECT * FROM test', wru.async(function (rows) {
+              this.close();
+              wru.assert('as Array', rows[0][0] === 'value');
+            }))
+          ;
+        }))
+        .query('.headers OFF') // before the next query
+        .on('close', Object)
+      ;
+    }
   }
 ]);
