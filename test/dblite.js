@@ -198,6 +198,7 @@ wru.test([
           this.close();
           wru.assert('file was NOT created', !(require('fs').existsSync || require('path').existsSync)(':memory:'));
         }))
+        .on('close', Object) // silent operation: don't show "bye bye"
       ;
     }
   },{
@@ -213,6 +214,82 @@ wru.test([
       setTimeout(wru.async(function () {
         wru.assert(times === 1);
       }), 500);
+    }
+  },{
+    name: '-header flag',
+    test: function () {
+      dblite(':memory:', '-header')
+        .query('CREATE TABLE test (a INTEGER PRIMARY KEY, b TEXT, c TEXT)')
+        .query('INSERT INTO test VALUES (null, 1, 2)')
+        .query('INSERT INTO test VALUES (null, 3, 4)')
+        .query('SELECT * FROM test', wru.async(function (rows) {
+          this.close();
+          wru.assert('correct length', rows.length === 2);
+          wru.assert('correct result',
+            JSON.stringify({a: '1', b: '1', c: '2'}) === JSON.stringify(rows[0]) &&
+            JSON.stringify({a: '2', b: '3', c: '4'}) === JSON.stringify(rows[1])
+          );
+        }))
+        .on('close', Object) // silent operation: don't show "bye bye"
+      ;
+    }
+  },{
+    // fields have priority if specified
+    name: '-header flag with fields too',
+    test: function () {
+      dblite(':memory:', '-header')
+        .query('CREATE TABLE test (a INTEGER PRIMARY KEY, b TEXT, c TEXT)')
+        .query('INSERT INTO test VALUES (null, 1, 2)')
+        .query('INSERT INTO test VALUES (null, 3, 4)')
+        .query('SELECT * FROM test', {d:Number, e:String, f:String}, wru.async(function (rows) {
+          this.close();
+          wru.assert('correct length', rows.length === 2);
+          wru.assert('correct result',
+            JSON.stringify({d: 1, e: '1', f: '2'}) === JSON.stringify(rows[0]) &&
+            JSON.stringify({d: 2, e: '3', f: '4'}) === JSON.stringify(rows[1])
+          );
+        }))
+        .on('close', Object) // silent operation: don't show "bye bye"
+      ;
+    }
+  },{
+    name: 'runtime headers',
+    test: function () {
+      dblite(':memory:')
+        .query('.headers ON')
+        .query('CREATE TABLE test (a INTEGER PRIMARY KEY, b TEXT, c TEXT)')
+        .query('INSERT INTO test VALUES (null, 1, 2)')
+        .query('INSERT INTO test VALUES (null, 3, 4)')
+        .query('SELECT * FROM test', wru.async(function (rows) {
+          this.close();
+          wru.assert('correct length', rows.length === 2);
+          wru.assert('correct result',
+            JSON.stringify({a: '1', b: '1', c: '2'}) === JSON.stringify(rows[0]) &&
+            JSON.stringify({a: '2', b: '3', c: '4'}) === JSON.stringify(rows[1])
+          );
+        }))
+        .query('.headers OFF')
+        .on('close', Object) // silent operation: don't show "bye bye"
+      ;
+    }
+  },{
+    name: 'runtime headers with fields too',
+    test: function () {
+      dblite(':memory:')
+        .query('.headers ON')
+        .query('CREATE TABLE test (a INTEGER PRIMARY KEY, b TEXT, c TEXT)')
+        .query('INSERT INTO test VALUES (null, 1, 2)')
+        .query('INSERT INTO test VALUES (null, 3, 4)')
+        .query('SELECT * FROM test', {d:Number, e:String, f:String}, wru.async(function (rows) {
+          this.close();
+          wru.assert('correct length', rows.length === 2);
+          wru.assert('correct result',
+            JSON.stringify({d: 1, e: '1', f: '2'}) === JSON.stringify(rows[0]) &&
+            JSON.stringify({d: 2, e: '3', f: '4'}) === JSON.stringify(rows[1])
+          );
+        }))
+        .on('close', Object) // silent operation: don't show "bye bye"
+      ;
     }
   }
 ]);

@@ -228,6 +228,34 @@ db.query('SELECT * FROM test WHERE id = ?', [123], {
 });
 ```
 
+### Automatic Fields Through Headers
+Since version `0.3.0` it is possible to enable automatic fields parsing either through initialization (suggested) or at runtime.
+```javascript
+var dblite = require('dblite'),
+    // passing extra argument at creation
+    db = dblite('file.name', '-header');
+
+db.query('SELECT * FROM table', function(rows) {
+  rows[0]; // {header0: value0, headerN: valueN}
+});
+
+// at runtime
+db
+  .query('.headers ON')
+  .query('SELECT * FROM table', function(rows) {
+    rows[0]; // {header0: value0, headerN: valueN}
+  })
+  .query('.headers OFF')
+;
+```
+**Pros** about this approach is the ability to create queries at runtime.
+
+**Cons** about this approach is the missed ability to parse fields/headers so that everything will be a string.
+Unfortunately this is a side effect of using a process output instead of a proper binding.
+
+**However**, even with `headers ON`, the `fields` argument has priority so it's possible to have a combination of both behaviors simplifying common operations.
+
+
 ### Handling Infos And Errors
 The `EventEmitter` will notify any listener attached to `info` or `error` accordingly with the current status.
 ```javascript

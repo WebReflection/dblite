@@ -109,7 +109,9 @@ function dblite() {
     SUPER_SECRET =  '---' +
                     crypto.randomBytes(64).toString('base64') +
                     '---',
-    SUPER_SECRET_SELECT = '"' + SUPER_SECRET + '";' + EOL,
+    // ... I wish .print was introduced before SQLite 3.7.10 ...
+    // this is a weird way to get rid of the header, if enabled
+    SUPER_SECRET_SELECT = '"' + SUPER_SECRET + '" AS "' + SUPER_SECRET + '";' + EOL,
     // used to check the end of a buffer
     SUPER_SECRET_LENGTH = -(SUPER_SECRET.length + EOL_LENGTH),
     // the incrementally concatenated buffer
@@ -203,14 +205,18 @@ function dblite() {
 
   // invoked each time the sqlite3 shell produces an output
   program.stdout.on('data', function (data) {
+    /*jshint eqnull: true*/
     // big output might require more than a call
-    var str, result, callback, fields;
+    var str, result, callback, fields, headers;
     // the whole output is converted into a string here
     selectResult += data;
     // if the end of the output is the serapator
     if (selectResult.slice(SUPER_SECRET_LENGTH) === SUPER_SECRET) {
       // time to move forward since sqlite3 has done
       str = selectResult.slice(0, SUPER_SECRET_LENGTH);
+      // drop the secret header if present
+      headers = str.slice(SUPER_SECRET_LENGTH) === SUPER_SECRET;
+      if (headers) str = str.slice(0, SUPER_SECRET_LENGTH);
       // clean up the outer variabls
       selectResult = '';
       // makes the spawned program not busy anymore
@@ -229,6 +235,16 @@ function dblite() {
         callback = $callback;
         // same as fields
         fields = $fields;
+        // if there were headers/fields and we have a result ...
+        if (headers && isArray(result)) {
+          //  ... and fields is not defined
+          if (fields == null) {
+            // fields is the row 0
+            fields = result[0];
+          }
+          // drop the first row with headers
+          result.shift();
+        }
         // but next query, should not have
         // previously set callbacks or fields
         $callback = $fields = null;
@@ -256,13 +272,16 @@ function dblite() {
         // not a select, just a special command
         // such .databases or .tables
         next();
-        // and if there was an 'info' listener
-        if (self.listeners('info').length) {
-          // notify
-          self.emit('info', EOL + str);
-        } else {
-          // otherwise log
-          log(EOL + str);
+        // if there is something to notify
+        if (str.length) {
+          // and if there was an 'info' listener
+          if (self.listeners('info').length) {
+            // notify
+            self.emit('info', EOL + str);
+          } else {
+            // otherwise log
+            log(EOL + str);
+          }
         }
       }
     }
@@ -320,7 +339,7 @@ function dblite() {
     if (notWorking) return onerror('closing'), self;
     // if something is still going on in the sqlite3 shell
     // the progcess is flagged as busy. Just queue other operations
-    if (busy) return queue.push(arguments);
+    if (busy) return queue.push(arguments), self;
     // if a SELECT or a PRAGMA ...
     wasSelect = SELECT.test(string);
     if (wasSelect) {
@@ -419,6 +438,8 @@ function dblite() {
           replaceString(string, params) :
           string
         ));
+        // keep checking for possible following operations
+        process.nextTick(next);
       }
     }
     // chainability just useful here for multiple queries at once
