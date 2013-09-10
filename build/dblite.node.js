@@ -521,13 +521,8 @@ function parseCSV(output) {
       default:
         iNext = output.indexOf(',', i);
         endLine = output.indexOf(EOL, i);
-        str = output.slice(i, iNext = endLine < iNext ?
-          endLine : (
-            iNext < 0 ?
-              length - EOL_LENGTH :
-              iNext
-          )
-        );
+        if (iNext < 0) iNext = length - EOL_LENGTH;
+        str = output.slice(i, endLine < iNext ? (iNext = endLine) : iNext);
         break;
     }
     fields[index++] = str;

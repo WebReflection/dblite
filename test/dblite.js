@@ -148,12 +148,12 @@ wru.test([
               db.query('SELECT ?', [2], {id:Number});
               setTimeout(wru.async(function(){
                 wru.assert('check the output, should be like the following');
-                /*
-                [ [ '1' ] ]
-                [ [ '2' ] ]
-                [ { id: 1 } ]
-                [ { id: 2 } ]
-                */
+
+                // [ [ '1' ] ]
+                // [ [ '2' ] ]
+                // [ { id: 1 } ]
+                // [ { id: 2 } ]
+
               }), 500);
             }));
           }));
@@ -289,6 +289,21 @@ wru.test([
           );
         }))
         .on('close', Object) // silent operation: don't show "bye bye"
+      ;
+    }
+  },{
+    name: 'single count on header',
+    test: function () {
+      dblite(':memory:')
+        .query('.headers ON')
+        .query('CREATE TABLE test (id INTEGER PRIMARY KEY)')
+        .query('INSERT INTO test VALUES (null)')
+        .query('SELECT COUNT(id) AS total FROM test', wru.async(function (rows) {
+          this.close();
+          wru.assert('right amount of rows', rows.length === 1 && rows[0].total == 1);
+        }))
+        .query('.headers OFF')
+        .on('close', Object)
       ;
     }
   }
