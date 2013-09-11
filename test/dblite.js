@@ -138,9 +138,9 @@ wru.test([
         db.query('SELECT ?', [2], wru.async(function (data) {
           wru.assert('just two', data[0][0] == 2);
           db.query('SELECT 1', {id:Number}, wru.async(function (data) {
-            wru.assert('still two', data[0].id === 1);
-            db.query('SELECT ?', [2], {id:Number}, wru.async(function (data) {
-              wru.assert('three', data[0].id === 2);
+            wru.assert('now one', data[0].id === 1);
+            db.query('SELECT ?', [3], {id:Number}, wru.async(function (data) {
+              wru.assert('now three', data[0].id === 3);
               // implicit output via bound console.log
               db.query('SELECT 1');
               db.query('SELECT ?', [2]);
@@ -241,12 +241,16 @@ wru.test([
         .query('CREATE TABLE test (a INTEGER PRIMARY KEY, b TEXT, c TEXT)')
         .query('INSERT INTO test VALUES (null, 1, 2)')
         .query('INSERT INTO test VALUES (null, 3, 4)')
-        .query('SELECT * FROM test', {d:Number, e:String, f:String}, wru.async(function (rows) {
+        // testing only one random item with a validation
+        // to be sure b will be used as second validation property
+        // headers are mandatory. Without headers b woul dbe used as `a`
+        // because the parsing is based on fields order (supported in V8)
+        .query('SELECT * FROM test', {b:Number}, wru.async(function (rows) {
           this.close();
           wru.assert('correct length', rows.length === 2);
           wru.assert('correct result',
-            JSON.stringify({d: 1, e: '1', f: '2'}) === JSON.stringify(rows[0]) &&
-            JSON.stringify({d: 2, e: '3', f: '4'}) === JSON.stringify(rows[1])
+            JSON.stringify({a: '1', b: 1, c: '2'}) === JSON.stringify(rows[0]) &&
+            JSON.stringify({a: '2', b: 3, c: '4'}) === JSON.stringify(rows[1])
           );
         }))
         .on('close', Object) // silent operation: don't show "bye bye"
@@ -280,12 +284,12 @@ wru.test([
         .query('CREATE TABLE test (a INTEGER PRIMARY KEY, b TEXT, c TEXT)')
         .query('INSERT INTO test VALUES (null, 1, 2)')
         .query('INSERT INTO test VALUES (null, 3, 4)')
-        .query('SELECT * FROM test', {d:Number, e:String, f:String}, wru.async(function (rows) {
+        .query('SELECT * FROM test', {b:Number}, wru.async(function (rows) {
           this.close();
           wru.assert('correct length', rows.length === 2);
           wru.assert('correct result',
-            JSON.stringify({d: 1, e: '1', f: '2'}) === JSON.stringify(rows[0]) &&
-            JSON.stringify({d: 2, e: '3', f: '4'}) === JSON.stringify(rows[1])
+            JSON.stringify({a: '1', b: 1, c: '2'}) === JSON.stringify(rows[0]) &&
+            JSON.stringify({a: '2', b: 3, c: '4'}) === JSON.stringify(rows[1])
           );
         }))
         .on('close', Object) // silent operation: don't show "bye bye"
@@ -343,6 +347,18 @@ wru.test([
           ;
         }))
         .query('.headers OFF') // before the next query
+        .on('close', Object)
+      ;
+    }
+  },{
+    name: 'combined fields and headers',
+    test: function () {
+      dblite(':memory:')
+        .query('.headers ON')
+        .query('SELECT 1 as one, 2 as two', {two:Number}, wru.async(function (rows) {
+          this.close();
+          wru.assert('right validation', rows[0].one === '1' && rows[0].two === 2);
+        }))
         .on('close', Object)
       ;
     }

@@ -263,6 +263,15 @@ function dblite() {
           if (fields == null) {
             // fields is the row 0
             fields = result[0];
+          } else if(!isArray(fields)) {
+            // per each non present key, enrich the fields object
+            // it is then possible to have automatic headers
+            // with some known field validated/parsed
+            // e.g. {id:Number} will be {id:Number, value:String}
+            // if the query was SELECT id, value FROM table
+            // and the fields object was just {id:Number}
+            // but headers were active
+            result[0].forEach(enrichFields, fields);
           }
           // drop the first row with headers
           result.shift();
@@ -470,6 +479,14 @@ function dblite() {
   return self;
 }
 
+// enrich possible fields object with extra headers
+function enrichFields(key) {
+  var had = this.hasOwnProperty(key),
+      callback = had && this[key];
+  delete this[key];
+  this[key] = had ? callback : String;
+}
+
 // if not a memory database
 // the file path should be resolved as absolute
 function normalizeFirstArgument(args) {
@@ -542,6 +559,9 @@ function parseCSV(output) {
 
 // create an object with right validation
 // and right fields to simplify the parsing
+// NOTE: this is based on ordered key
+// which is not specified by old ES specs
+// but it works like this in V8
 function parseFields($fields) {
   for (var
     current,

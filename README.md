@@ -248,12 +248,17 @@ db
   .query('.headers OFF')
 ;
 ```
-**Pros** about this approach is the ability to create queries at runtime.
 
-**Cons** about this approach is the missed ability to parse fields/headers so that everything will be a string.
-Unfortunately this is a side effect of using a process output instead of a proper binding.
+In version `0.3.2` a smarter approach for combined _headers/fields_ is used where the right key order is granted by headers but it's possible to validate known fields too.
 
-**However**, even with `headers ON`, the `fields` argument has priority so it's possible to have a combination of both behaviors simplifying common operations.
+```javascript
+var db = require('dblite')('file.name', '-header');
+
+db.query('SELECT 1 as one, 2 as two', {two:Number}, function(rows) {
+  rows[0]; // {one: "1", two: 2} // note "1" as String
+});
+```
+In this way these two options can be supplementary when and if necessary.
 
 
 ### Handling Infos And Errors
