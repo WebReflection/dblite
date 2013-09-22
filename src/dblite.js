@@ -78,7 +78,8 @@ var
   // keeps memory low and improves performance
   paramsIndex,  // which index is the current
   paramsArray,  // which value when Array
-  paramsObject  // which value when Object (named parameters)
+  paramsObject, // which value when Object (named parameters)
+  IS_NODE_06 = false // dirty things to do there ...
 ;
 
 /**
@@ -307,6 +308,7 @@ function dblite() {
     program.on('close', close);
     program.unref();
   } else {
+    IS_NODE_06 = true;
     program.stdout.on('close', close);
   }
 
@@ -724,7 +726,7 @@ Object.defineProperty(
         // resolve the path
         value = path.resolve(value);
         // verify it exists
-        if (!require('fs').existsSync(value)) {
+        if (!require(IS_NODE_06 ? 'path' : 'fs').existsSync(value)) {
           throw 'invalid executable: ' + value;
         }
       }
