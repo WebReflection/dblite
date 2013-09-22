@@ -201,7 +201,10 @@ db.query('SELECT * FROM test WHERE id = :id', {
 
 #### The callback:Function
 When a `SELECT` or a `PRAGMA` `SQL` is executed the module puts itself in a *waiting for results* state.
-As soon as results are fully pushed to the output the module parses this result and send it to the specified callback.
+
+**Update** - Starting from `0.3.3` every other `SQL` statement will invoke the callback after the operation has been completed.
+
+As soon as results are fully pushed to the output the module parses this result, if any, and send it to the specified callback.
 
 The callback is **always the last specified parameter**, if any, or the implicit equivalent of `console.log.bind(console)`.
 Latter case is simply helpful to operate directly via `node` **console** and see results without bothering writing a callback each `.query()` call.

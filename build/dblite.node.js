@@ -176,6 +176,7 @@ function dblite() {
     busy = false,
     // tells if current output needs to be processed
     wasSelect = false,
+    wasNotSelect = false,
     // forces the output not to be processed
     // might be handy in some case where it's passed around
     // as string instread of needing to serialize/unserialize
@@ -229,7 +230,7 @@ function dblite() {
   program.stdout.on('data', function (data) {
     /*jshint eqnull: true*/
     // big output might require more than a call
-    var str, result, callback, fields, headers;
+    var str, result, callback, fields, headers, wasSelectLocal;
     // the whole output is converted into a string here
     selectResult += data;
     // if the end of the output is the serapator
@@ -244,37 +245,41 @@ function dblite() {
       // makes the spawned program not busy anymore
       busy = false;
       // if it was a select
-      if (wasSelect) {
-        // unless specified, process the string
-        // converting the CSV into an Array of rows
-        result = dontParseCSV ? str : parseCSV(str);
+      if (wasSelect || wasNotSelect) {
+        wasSelectLocal = wasSelect;
         // set as false all conditions
         // only here dontParseCSV could have been true
         // set to false that too
-        wasSelect = dontParseCSV = busy;
+        wasSelect = wasNotSelect = dontParseCSV = busy;
         // which callback should be invoked?
         // last expected one for this round
         callback = $callback;
         // same as fields
         fields = $fields;
-        // if there were headers/fields and we have a result ...
-        if (headers && isArray(result)) {
-          //  ... and fields is not defined
-          if (fields == null) {
-            // fields is the row 0
-            fields = result[0];
-          } else if(!isArray(fields)) {
-            // per each non present key, enrich the fields object
-            // it is then possible to have automatic headers
-            // with some known field validated/parsed
-            // e.g. {id:Number} will be {id:Number, value:String}
-            // if the query was SELECT id, value FROM table
-            // and the fields object was just {id:Number}
-            // but headers were active
-            result[0].forEach(enrichFields, fields);
+        // parse only if it was a select/pragma
+        if (wasSelectLocal) {
+          // unless specified, process the string
+          // converting the CSV into an Array of rows
+          result = dontParseCSV ? str : parseCSV(str);
+          // if there were headers/fields and we have a result ...
+          if (headers && isArray(result)) {
+            //  ... and fields is not defined
+            if (fields == null) {
+              // fields is the row 0
+              fields = result[0];
+            } else if(!isArray(fields)) {
+              // per each non present key, enrich the fields object
+              // it is then possible to have automatic headers
+              // with some known field validated/parsed
+              // e.g. {id:Number} will be {id:Number, value:String}
+              // if the query was SELECT id, value FROM table
+              // and the fields object was just {id:Number}
+              // but headers were active
+              result[0].forEach(enrichFields, fields);
+            }
+            // drop the first row with headers
+            result.shift();
           }
-          // drop the first row with headers
-          result.shift();
         }
         // but next query, should not have
         // previously set callbacks or fields
@@ -460,17 +465,43 @@ function dblite() {
         // once everything is done
         program.stdin.write(string + EOL + 'SELECT ' + SUPER_SECRET_SELECT);
       } else {
-        // all other statements are OK, no need to make the shell busy
-        // since no output is shown at all (errors ... eventually)
-        // sqlite3 shell will take care of the order
-        // same as writing in a linux shell while something else is going on
-        // who cares, will show when possible, after current job ^_^
-        program.stdin.write(sanitize(HAS_PARAMS.test(string) ?
-          replaceString(string, params) :
-          string
-        ));
-        // keep checking for possible following operations
-        process.nextTick(next);
+        switch(arguments.length) {
+          case 1:
+            /* falls through */
+          case 2:
+            if (typeof params !== 'function') {
+              // no need to make the shell busy
+              // since no output is shown at all (errors ... eventually)
+              // sqlite3 shell will take care of the order
+              // same as writing in a linux shell while something else is going on
+              // who cares, will show when possible, after current job ^_^
+              program.stdin.write(sanitize(HAS_PARAMS.test(string) ?
+                replaceString(string, params) :
+                string
+              ));
+              // keep checking for possible following operations
+              process.nextTick(next);
+              break;
+            }
+            fields = params;
+            // not necessary but guards possible wrong replaceString
+            params = null;
+            /* falls through */
+          case 3:
+            // execute a non SELECT/PRAGMA statement
+            // and be notified once it's done.
+            // set state as busy
+            busy = wasNotSelect = true;
+            $callback = fields;
+            program.stdin.write(
+              (sanitize(
+                HAS_PARAMS.test(string) ?
+                  replaceString(string, params) :
+                  string
+              )) +
+              EOL + 'SELECT ' + SUPER_SECRET_SELECT
+            );
+        }
       }
     }
     // chainability just useful here for multiple queries at once

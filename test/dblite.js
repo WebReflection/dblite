@@ -362,5 +362,22 @@ wru.test([
         .on('close', Object)
       ;
     }
+  },{
+    name: 'notifies inserts or other operations too',
+    test: function () {
+      var many = 0, db = dblite(':memory:');
+      db.query('CREATE TABLE IF NOT EXISTS `kvp` (id INTEGER PRIMARY KEY, key TEXT, value TEXT)');
+      db.query('BEGIN TRANSACTION');
+      while(many++ < 100) {
+        db.query('INSERT INTO kvp VALUES(null, "k' + many + '", "v' + many + '")');
+      }
+      db.query('COMMIT', wru.async(function () {
+        wru.assert('so far, so good');
+        db.query('SELECT COUNT(id) FROM kvp', wru.async(function (rows) {
+          db.close();
+          wru.assert('exact number of rows', +rows[0][0] === --many);
+        }));
+      }));
+    }
   }
 ]);
