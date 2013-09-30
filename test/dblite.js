@@ -379,5 +379,19 @@ wru.test([
         }));
       }));
     }
+  },{
+    name: 'automagic serialization',
+    test: function () {
+      dblite(':memory:')
+        .query('CREATE TABLE IF NOT EXISTS `kv` (id INTEGER PRIMARY KEY, value TEXT)')
+        .query('INSERT INTO `kv` VALUES(?, ?)', [null, {some:'text'}])
+        .query('SELECT * FROM `kv`', {
+          id: Number,
+          value: JSON.parse
+        }, wru.async(function(rows) {
+          this.close();
+          wru.assert('it did JSON.parse correctly', rows[0].value.some === 'text');
+        }))
+    }
   }
 ]);

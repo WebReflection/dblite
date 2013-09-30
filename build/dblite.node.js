@@ -679,18 +679,18 @@ function row2parsed(row) {
 // or useful for JavaScript once retrieved back
 function escape(what) {
   /*jshint eqnull: true*/
-  var isNULL = what == null,
-      str;
   switch (typeof what) {
-    // Object are simply stringified
-    case 'object':
-      str = isNULL ? 'null' : JSON.stringify(what);
-      /* falls through */
     case 'string':
-      return isNULL ? str : (
-        // all strings are safely escaped
-        "'" + what.replace(SINGLE_QUOTES, SINGLE_QUOTES_DOUBLED) + "'"
-      );
+      return "'" + what.replace(
+        SINGLE_QUOTES, SINGLE_QUOTES_DOUBLED
+      ) + "'";
+    case 'object':
+      return what == null ?
+        'null' :
+        ("'" + JSON.stringify(what).replace(
+          SINGLE_QUOTES, SINGLE_QUOTES_DOUBLED
+        ) + "'")
+      ;
     // SQLite has no Boolean type
     case 'boolean':
       return what ? '1' : '0'; // 1 => true, 0 => false
