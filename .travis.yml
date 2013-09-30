@@ -15,4 +15,3 @@ before_script:
   - "sudo apt-get update -qq"
   - "which sqlite3"
   - "sqlite3 --version"
-  - "sqlite3 --help"
