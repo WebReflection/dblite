@@ -11,7 +11,6 @@ branches:
     - master
 before_script:
   - "npm install wru"
-  - "sudo apt-get install -qq sqlite3"
-  - "sudo apt-get update -qq"
+  - "PACKAGE=sqlite-shell-linux-x86-3080002; wget http://www.sqlite.org/2013/$PACKAGE.zip && sudo unzip $PACKAGE -d /usr/bin/ && rm $PACKAGE.zip"
   - "which sqlite3"
   - "sqlite3 --version"
