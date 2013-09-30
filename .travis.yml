@@ -13,5 +13,6 @@ before_script:
   - "npm install wru"
   - "sudo apt-get install -qq sqlite3"
   - "sudo apt-get update -qq"
-  - "print $(which sqlite3)"
-  - "print $(sqlite3 --version)"
+  - "which sqlite3"
+  - "sqlite3 --version"
+  - "sqlite3 --help"
