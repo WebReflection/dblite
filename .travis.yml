@@ -11,4 +11,6 @@ branches:
     - master
 before_script:
   - "npm install wru"
-  - "sudo apt-get install sqlite3"
+  - "sudo apt-get install -qq sqlite3"
+  - "sudo apt-get update -qq"
+  - "which sqlite3"
