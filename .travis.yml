@@ -14,3 +14,4 @@ before_script:
   - "sudo apt-get install -qq sqlite3"
   - "sudo apt-get update -qq"
   - "echo $(which sqlite3)"
+  - "echo $(sqlite3 --version)"
