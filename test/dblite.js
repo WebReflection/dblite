@@ -1,9 +1,9 @@
 //remove:
 var dblite = require('../build/dblite.node.js'),
-    file = 'dblite.test.sqlite'/*require('path').join(
+    file = require('path').join(
       (require('os').tmpdir || function(){return '.'})(),
       'dblite.test.sqlite'
-    )*/,
+    ),
     db;
 if (typeof wru === 'undefined') wru = require('wru');
 //:remove
