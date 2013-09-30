@@ -107,9 +107,9 @@ function dblite() {
 
   var
     // this is the delimiter of each sqlite3 shell command
-    SUPER_SECRET =  '---' +
-                    crypto.randomBytes(64).toString('base64') +
-                    '---',
+    SUPER_SECRET =  //'---' +
+                    crypto.randomBytes(64).toString('base64'),
+                    //'---',
     // ... I wish .print was introduced before SQLite 3.7.10 ...
     // this is a weird way to get rid of the header, if enabled
     SUPER_SECRET_SELECT = '"' + SUPER_SECRET + '" AS "' + SUPER_SECRET + '";' + EOL,
