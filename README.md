@@ -12,8 +12,6 @@ db.query('SELECT * FROM table', function(rows) {
 ```
 More in [the related blogpost](http://webreflection.blogspot.com/2013/07/dblite-sqlite3-for-nodejs-made-easy.html) and here too :-)
 
-[![build status](https://secure.travis-ci.org/WebReflection/dblite.png)](http://travis-ci.org/WebReflection/dblite)
-
 [![NPM](https://nodei.co/npm/dblite.png?downloads=true)](https://nodei.co/npm/dblite/)
 
 
