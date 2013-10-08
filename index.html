@@ -1,0 +1,490 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Dblite by WebReflection</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Dblite</h1>
+        <p>sqlite for node.js without gyp problems</p>
+        <p class="view"><a href="https://github.com/WebReflection/dblite">View the Project on GitHub <small>WebReflection/dblite</small></a></p>
+        <ul>
+          <li><a href="https://github.com/WebReflection/dblite/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/WebReflection/dblite/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/WebReflection/dblite">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a name="dblite" class="anchor" href="#dblite"><span class="octicon octicon-link"></span></a>dblite</h1>
+
+<p>a zero hassle wrapper for sqlite</p>
+
+<div class="highlight highlight-javascript"><pre><span class="kd">var</span> <span class="nx">dblite</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'dblite'</span><span class="p">),</span>
+    <span class="nx">db</span> <span class="o">=</span> <span class="nx">dblite</span><span class="p">(</span><span class="s1">'file.name'</span><span class="p">);</span>
+
+<span class="c1">// Asynchronous, fast, and ...</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'SELECT * FROM table'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">rows</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// ... that easy!</span>
+<span class="p">});</span>
+</pre></div>
+
+<p>More in <a href="http://webreflection.blogspot.com/2013/07/dblite-sqlite3-for-nodejs-made-easy.html">the related blogpost</a> and here too :-)</p>
+
+<p><a href="https://nodei.co/npm/dblite/"><img src="https://nodei.co/npm/dblite.png?downloads=true" alt="NPM"></a></p>
+
+<h3>
+<a name="the-what-and-the-why" class="anchor" href="#the-what-and-the-why"><span class="octicon octicon-link"></span></a>The What And The Why</h3>
+
+<p>I've created <code>dblite</code> module because there's still not a simple and straight forward or standard way to have <a href="http://www.sqlite.org">sqlite</a> in <a href="http://nodejs.org">node.js</a> without requiring to re-compile, re-build, download sources a part or install dependencies instead of simply <code>apt-get install sqlite3</code> or <code>pacman -S sqlite3</code> in your *nix system.</p>
+
+<p><code>dblite</code> has been created with portability, simplicity, and reasonable performance for <strong>embedded Hardware</strong> such <a href="http://www.raspberrypi.org">Raspberry Pi</a> and <a href="http://cubieboard.org">Cubieboard</a> in mind.</p>
+
+<p>Generally speaking all linux based distributions like <a href="https://www.archlinux.org">Arch Linux</a>, where is not always that easy to <code>node-gyp</code> a module and add dependencies that work, can now use this battle tested wrap and perform basic to advanced sqlite operations.</p>
+
+<h3>
+<a name="bootstrap" class="anchor" href="#bootstrap"><span class="octicon octicon-link"></span></a>Bootstrap</h3>
+
+<p>To install dblite simply <code>npm install dblite</code> then in node:</p>
+
+<div class="highlight highlight-javascript"><pre><span class="kd">var</span> <span class="nx">dblite</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'dblite'</span><span class="p">),</span>
+    <span class="nx">db</span> <span class="o">=</span> <span class="nx">dblite</span><span class="p">(</span><span class="s1">'/folder/to/file.sqlite'</span><span class="p">);</span>
+
+<span class="c1">// ready to go, i.e.</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'.databases'</span><span class="p">);</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span>
+  <span class="s1">'SELECT * FROM users WHERE pass = ?'</span><span class="p">,</span>
+  <span class="p">[</span><span class="nx">pass</span><span class="p">],</span>
+  <span class="kd">function</span> <span class="p">(</span><span class="nx">rows</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">user</span> <span class="o">=</span> <span class="nx">rows</span><span class="p">.</span><span class="nx">length</span> <span class="o">&amp;&amp;</span> <span class="nx">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+  <span class="p">}</span>
+<span class="p">);</span>
+</pre></div>
+
+<p>By default the <code>dblite</code> function uses <strong>sqlite3 as exacutable</strong>. If you need to change the path simply update <code>dblite.bin = "/usr/local/bin/sqlite3";</code> before invoking the function.</p>
+
+<h3>
+<a name="api" class="anchor" href="#api"><span class="octicon octicon-link"></span></a>API</h3>
+
+<p>Right now a created <code>EventEmitter</code> <code>db</code> instance has 3 extra methods: <code>.query()</code>, <code>.lastRowID()</code>, and <code>.close()</code>.</p>
+
+<p>The <code>.lastRowID(table, callback(rowid))</code> helper simplifies a common operation with SQL tables after inserts, handful as shortcut for the following query:
+<code>SELECT ROWID FROM</code><code>table</code><code>ORDER BY ROWID DESC LIMIT 1</code>.</p>
+
+<p>The method <code>.close()</code> does exactly what it suggests: it closes the database connection.
+Please note that it is <strong>not possible to perform other operations once it has been closed</strong>.</p>
+
+<p>Being an <code>EventEmitter</code> instance, the database variable will be notified with the <code>close</code> listener, if any.</p>
+
+<h3>
+<a name="understanding-the-query-method" class="anchor" href="#understanding-the-query-method"><span class="octicon octicon-link"></span></a>Understanding The .query() Method</h3>
+
+<p>The main role in this module is played by the <code>db.query()</code> method, a method rich in overloads all with perfect and natural meaning.</p>
+
+<p>The amount of parameters goes from one to four, left to right, where left is the input going through the right which is the eventual output.</p>
+
+<p>All parameters are optionals except the SQL one.</p>
+
+<h3>
+<a name="dbquery-possible-combinations" class="anchor" href="#dbquery-possible-combinations"><span class="octicon octicon-link"></span></a>db.query() Possible Combinations</h3>
+
+<div class="highlight highlight-javascript"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="nx">SQL</span><span class="p">)</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="nx">SQL</span><span class="p">,</span> <span class="nx">callback</span><span class="o">:</span><span class="nb">Function</span><span class="p">)</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="nx">SQL</span><span class="p">,</span> <span class="nx">params</span><span class="o">:</span><span class="nb">Array</span><span class="o">|</span><span class="nb">Object</span><span class="p">)</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="nx">SQL</span><span class="p">,</span> <span class="nx">fields</span><span class="o">:</span><span class="nb">Array</span><span class="o">|</span><span class="nb">Object</span><span class="p">)</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="nx">SQL</span><span class="p">,</span> <span class="nx">params</span><span class="o">:</span><span class="nb">Array</span><span class="o">|</span><span class="nb">Object</span><span class="p">,</span> <span class="nx">callback</span><span class="o">:</span><span class="nb">Function</span><span class="p">)</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="nx">SQL</span><span class="p">,</span> <span class="nx">fields</span><span class="o">:</span><span class="nb">Array</span><span class="o">|</span><span class="nb">Object</span><span class="p">,</span> <span class="nx">callback</span><span class="o">:</span><span class="nb">Function</span><span class="p">)</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="nx">SQL</span><span class="p">,</span> <span class="nx">params</span><span class="o">:</span><span class="nb">Array</span><span class="o">|</span><span class="nb">Object</span><span class="p">,</span> <span class="nx">fields</span><span class="o">:</span><span class="nb">Array</span><span class="o">|</span><span class="nb">Object</span><span class="p">)</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="nx">SQL</span><span class="p">,</span> <span class="nx">params</span><span class="o">:</span><span class="nb">Array</span><span class="o">|</span><span class="nb">Object</span><span class="p">,</span> <span class="nx">fields</span><span class="o">:</span><span class="nb">Array</span><span class="o">|</span><span class="nb">Object</span><span class="p">,</span> <span class="nx">callback</span><span class="o">:</span><span class="nb">Function</span><span class="p">)</span>
+</pre></div>
+
+<p>All above combinations are <a href="test/dblite.js">tested properly in this file</a> together with many other tests able to make <code>dblite</code> robust enough and ready to be used.</p>
+
+<p>Please note how <code>params</code> is always before <code>fields</code> and/or <code>callback</code> if <code>fields</code> is missing, just as reminder that order is left to right accordingly with what we are trying to do.</p>
+
+<p>Following detailed explanation per each parameter.</p>
+
+<h4>
+<a name="the-sqlstring" class="anchor" href="#the-sqlstring"><span class="octicon octicon-link"></span></a>The SQL:string</h4>
+
+<p>This string <a href="http://www.sqlite.org/lang.html">accepts any query understood by SQLite</a> plus it accepts all commands that regular SQLite shell would accept such <code>.databases</code>, <code>.tables</code>, <code>.show</code> and all others passing through the specified <code>info</code> listener, if any, using just the console as fallback otherwise.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="kd">var</span> <span class="nx">dblite</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'dblite'</span><span class="p">),</span>
+    <span class="nx">db</span> <span class="o">=</span> <span class="nx">dblite</span><span class="p">(</span><span class="s1">'./db.sqlite'</span><span class="p">);</span>
+
+<span class="c1">// will call the implicit `info` console.log</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'.show'</span><span class="p">);</span>
+<span class="cm">/* will console.log something like:</span>
+
+<span class="cm">     echo: off</span>
+<span class="cm">  explain: off</span>
+<span class="cm">  headers: off</span>
+<span class="cm">     mode: csv</span>
+<span class="cm">nullvalue: ""</span>
+<span class="cm">   output: stdout</span>
+<span class="cm">separator: ","</span>
+<span class="cm">    stats: off</span>
+<span class="cm">    width:</span>
+<span class="cm">*/</span>
+
+<span class="c1">// normal query</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY, value TEXT)'</span><span class="p">);</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'INSERT INTO test VALUES(null, ?)'</span><span class="p">,</span> <span class="p">[</span><span class="s1">'some text'</span><span class="p">]);</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'SELECT * FROM test'</span><span class="p">);</span>
+<span class="c1">// will implicitly log the following</span>
+<span class="c1">// [ [ '1', 'some text' ] ]</span>
+</pre></div>
+
+<h4>
+<a name="the-paramsarrayobject" class="anchor" href="#the-paramsarrayobject"><span class="octicon octicon-link"></span></a>The params:Array|Object</h4>
+
+<p>If the SQL string <strong>contains special chars</strong> such <code>?</code>, <code>:key</code>, <code>$key</code>, or <code>@key</code> properties, these will be replaced accordingly with the <code>params</code> <code>Array</code> or <code>Object</code> that, in this case, MUST be present.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="c1">// params as Array</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'SELECT * FROM test WHERE id = ?'</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+
+<span class="c1">// params as Object</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'SELECT * FROM test WHERE id = :id'</span><span class="p">,</span> <span class="p">{</span><span class="nx">id</span><span class="o">:</span><span class="mi">1</span><span class="p">});</span>
+<span class="c1">// same as</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'SELECT * FROM test WHERE id = $id'</span><span class="p">,</span> <span class="p">{</span><span class="nx">id</span><span class="o">:</span><span class="mi">1</span><span class="p">});</span>
+<span class="c1">// same as</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'SELECT * FROM test WHERE id = @id'</span><span class="p">,</span> <span class="p">{</span><span class="nx">id</span><span class="o">:</span><span class="mi">1</span><span class="p">});</span>
+</pre></div>
+
+<h4>
+<a name="the-fieldsarrayobject" class="anchor" href="#the-fieldsarrayobject"><span class="octicon octicon-link"></span></a>The fields:Array|Object</h4>
+
+<p>By default, results are returned as an <code>Array</code> where all rows are the outer <code>Array</code> and each single row is another <code>Array</code>.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'SELECT * FROM test'</span><span class="p">);</span>
+<span class="c1">// will log something like:</span>
+<span class="p">[</span>
+  <span class="p">[</span> <span class="s1">'1'</span><span class="p">,</span> <span class="s1">'some text'</span> <span class="p">],</span>     <span class="c1">// row1</span>
+  <span class="p">[</span> <span class="s1">'2'</span><span class="p">,</span> <span class="s1">'something else'</span> <span class="p">]</span> <span class="c1">// rowN</span>
+<span class="p">]</span>
+</pre></div>
+
+<p>If we specify a fields parameter we can have each row represented by an object, instead of an array.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="c1">// same query using fields as Array</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'SELECT * FROM test'</span><span class="p">,</span> <span class="p">[</span><span class="s1">'key'</span><span class="p">,</span> <span class="s1">'value'</span><span class="p">]);</span>
+<span class="c1">// will log something like:</span>
+<span class="p">[</span>
+  <span class="p">{</span><span class="nx">key</span><span class="o">:</span> <span class="s1">'1'</span><span class="p">,</span> <span class="nx">value</span><span class="o">:</span> <span class="s1">'some text'</span><span class="p">},</span>     <span class="c1">// row1</span>
+  <span class="p">{</span><span class="nx">key</span><span class="o">:</span> <span class="s1">'2'</span><span class="p">,</span> <span class="nx">value</span><span class="o">:</span> <span class="s1">'something else'</span><span class="p">}</span> <span class="c1">// rowN</span>
+<span class="p">]</span>
+</pre></div>
+
+<h4>
+<a name="parsing-through-the-fieldsobject" class="anchor" href="#parsing-through-the-fieldsobject"><span class="octicon octicon-link"></span></a>Parsing Through The fields:Object</h4>
+
+<p><a href="http://www.sqlite.org/datatype3.html">SQLite Datatypes</a> are different from JavaScript plus SQLite works via affinity.
+This module also parses sqlite3 output which is <strong>always a string</strong> and as string every result will always be returned <strong>unless</strong> we specify <code>fields</code> parameter as object, suggesting validation per each field.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="c1">// same query using fields as Object</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'SELECT * FROM test'</span><span class="p">,</span> <span class="p">{</span>
+  <span class="nx">key</span><span class="o">:</span> <span class="nb">Number</span><span class="p">,</span>
+  <span class="nx">value</span><span class="o">:</span> <span class="nb">String</span>
+<span class="p">});</span>
+<span class="c1">// note the key as integer!</span>
+<span class="p">[</span>
+  <span class="p">{</span><span class="nx">key</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">value</span><span class="o">:</span> <span class="s1">'some text'</span><span class="p">},</span>     <span class="c1">// row1</span>
+  <span class="p">{</span><span class="nx">key</span><span class="o">:</span> <span class="mi">2</span><span class="p">,</span> <span class="nx">value</span><span class="o">:</span> <span class="s1">'something else'</span><span class="p">}</span> <span class="c1">// rowN</span>
+<span class="p">]</span>
+</pre></div>
+
+<p>More complex validators/transformers can be passed without problems:</p>
+
+<div class="highlight highlight-javascript"><pre><span class="c1">// same query using fields as Object</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'SELECT * FROM `table.users`'</span><span class="p">,</span> <span class="p">{</span>
+  <span class="nx">id</span><span class="o">:</span> <span class="nb">Number</span><span class="p">,</span>
+  <span class="nx">name</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span>
+  <span class="nx">adult</span><span class="o">:</span> <span class="nb">Boolean</span><span class="p">,</span>
+  <span class="nx">skills</span><span class="o">:</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">,</span>
+  <span class="nx">birthday</span><span class="o">:</span> <span class="nb">Date</span><span class="p">,</span>
+  <span class="nx">cube</span><span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">fieldValue</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">fieldValue</span> <span class="o">*</span> <span class="mi">3</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
+
+<h4>
+<a name="the-paramsarrayobject-and-the-fieldsarrayobject" class="anchor" href="#the-paramsarrayobject-and-the-fieldsarrayobject"><span class="octicon octicon-link"></span></a>The params:Array|Object AND The fields:Array|Object</h4>
+
+<p>Not a surprise we can combine both params, using the left to right order input to output so <strong>params first</strong>!</p>
+
+<div class="highlight highlight-javascript"><pre><span class="c1">// same query using params AND fields</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'SELECT * FROM test WHERE id = :id'</span><span class="p">,</span> <span class="p">{</span>
+  <span class="nx">id</span><span class="o">:</span> <span class="mi">1</span>
+<span class="p">},{</span>
+  <span class="nx">key</span><span class="o">:</span> <span class="nb">Number</span><span class="p">,</span>
+  <span class="nx">value</span><span class="o">:</span> <span class="nb">String</span>
+<span class="p">});</span>
+
+<span class="c1">// same as...</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'SELECT * FROM test WHERE id = ?'</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="s1">'key'</span><span class="p">,</span> <span class="s1">'value'</span><span class="p">]);</span>
+<span class="c1">// same as...</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'SELECT * FROM test WHERE id = ?'</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">{</span>
+  <span class="nx">key</span><span class="o">:</span> <span class="nb">Number</span><span class="p">,</span>
+  <span class="nx">value</span><span class="o">:</span> <span class="nb">String</span>
+<span class="p">});</span>
+<span class="c1">// same as...</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'SELECT * FROM test WHERE id = :id'</span><span class="p">,</span> <span class="p">{</span>
+  <span class="nx">id</span><span class="o">:</span> <span class="mi">1</span>
+<span class="p">},</span> <span class="p">[</span>
+  <span class="s1">'key'</span><span class="p">,</span> <span class="s1">'value'</span>
+<span class="p">]);</span>
+</pre></div>
+
+<h4>
+<a name="the-callbackfunction" class="anchor" href="#the-callbackfunction"><span class="octicon octicon-link"></span></a>The callback:Function</h4>
+
+<p>When a <code>SELECT</code> or a <code>PRAGMA</code> <code>SQL</code> is executed the module puts itself in a <em>waiting for results</em> state.</p>
+
+<p><strong>Update</strong> - Starting from <code>0.3.3</code> every other <code>SQL</code> statement will invoke the callback after the operation has been completed.</p>
+
+<p>As soon as results are fully pushed to the output the module parses this result, if any, and send it to the specified callback.</p>
+
+<p>The callback is <strong>always the last specified parameter</strong>, if any, or the implicit equivalent of <code>console.log.bind(console)</code>.
+Latter case is simply helpful to operate directly via <code>node</code> <strong>console</strong> and see results without bothering writing a callback each <code>.query()</code> call.</p>
+
+<h4>
+<a name="extra-bonus-json-serialization-with-fieldsarrayobject" class="anchor" href="#extra-bonus-json-serialization-with-fieldsarrayobject"><span class="octicon octicon-link"></span></a>Extra Bonus: JSON Serialization With fields:Array|Object</h4>
+
+<p>If one field value is not scalar (boolean, number, string, null) <code>JSON.stringify</code> is performed in order to save data.
+This helps lazy developers that don't want to pre parse every field and let <code>dblite</code> do the magic.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="c1">// test has two fields, id and value</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'INSERT INTO test VALUES(?, ?)'</span><span class="p">,</span> <span class="p">[</span>
+  <span class="mi">123</span><span class="p">,</span>
+  <span class="p">{</span><span class="nx">name</span><span class="o">:</span> <span class="s1">'dblite'</span><span class="p">,</span> <span class="nx">rate</span><span class="o">:</span> <span class="s1">'awesome'</span><span class="p">}</span> <span class="c1">// value serialized</span>
+<span class="p">]);</span>
+
+<span class="c1">// use the fields to parse back the object</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'SELECT * FROM test WHERE id = ?'</span><span class="p">,</span> <span class="p">[</span><span class="mi">123</span><span class="p">],</span> <span class="p">{</span>
+  <span class="nx">id</span><span class="o">:</span> <span class="nb">Number</span><span class="p">,</span>
+  <span class="nx">value</span><span class="o">:</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span> <span class="c1">// value unserialized</span>
+<span class="p">},</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">rows</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">record</span> <span class="o">=</span> <span class="nx">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">record</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span> <span class="c1">// 123</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">record</span><span class="p">.</span><span class="nx">value</span><span class="p">.</span><span class="nx">name</span><span class="p">);</span> <span class="c1">// "dblite"</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">record</span><span class="p">.</span><span class="nx">value</span><span class="p">.</span><span class="nx">rate</span><span class="p">);</span> <span class="c1">// "awesome""</span>
+<span class="p">});</span>
+</pre></div>
+
+<h3>
+<a name="automatic-fields-through-headers" class="anchor" href="#automatic-fields-through-headers"><span class="octicon octicon-link"></span></a>Automatic Fields Through Headers</h3>
+
+<p>Since version <code>0.3.0</code> it is possible to enable automatic fields parsing either through initialization (suggested) or at runtime.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="kd">var</span> <span class="nx">dblite</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'dblite'</span><span class="p">),</span>
+    <span class="c1">// passing extra argument at creation</span>
+    <span class="nx">db</span> <span class="o">=</span> <span class="nx">dblite</span><span class="p">(</span><span class="s1">'file.name'</span><span class="p">,</span> <span class="s1">'-header'</span><span class="p">);</span>
+
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'SELECT * FROM table'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">rows</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span> <span class="c1">// {header0: value0, headerN: valueN}</span>
+<span class="p">});</span>
+
+<span class="c1">// at runtime</span>
+<span class="nx">db</span>
+  <span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'.headers ON'</span><span class="p">)</span>
+  <span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'SELECT * FROM table'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">rows</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span> <span class="c1">// {header0: value0, headerN: valueN}</span>
+  <span class="p">})</span>
+  <span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'.headers OFF'</span><span class="p">)</span>
+<span class="p">;</span>
+</pre></div>
+
+<p>In version <code>0.3.2</code> a smarter approach for combined <em>headers/fields</em> is used where the right key order is granted by headers but it's possible to validate known fields too.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="kd">var</span> <span class="nx">db</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'dblite'</span><span class="p">)(</span><span class="s1">'file.name'</span><span class="p">,</span> <span class="s1">'-header'</span><span class="p">);</span>
+
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'SELECT 1 as one, 2 as two'</span><span class="p">,</span> <span class="p">{</span><span class="nx">two</span><span class="o">:</span><span class="nb">Number</span><span class="p">},</span> <span class="kd">function</span><span class="p">(</span><span class="nx">rows</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span> <span class="c1">// {one: "1", two: 2} // note "1" as String</span>
+<span class="p">});</span>
+</pre></div>
+
+<p>In this way these two options can be supplementary when and if necessary.</p>
+
+<h3>
+<a name="handling-infos-and-errors---listeners" class="anchor" href="#handling-infos-and-errors---listeners"><span class="octicon octicon-link"></span></a>Handling Infos And Errors - Listeners</h3>
+
+<p>The <code>EventEmitter</code> will notify any listener attached to <code>info</code>, <code>error</code>, or <code>close</code> accordingly with the current status.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'info'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// show data returned by special syntax</span>
+  <span class="c1">// such: .databases .tables .show and others</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span>
+  <span class="c1">// by default, it does the same</span>
+<span class="p">});</span>
+
+<span class="nx">db</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'error'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">message</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// same as `info` but for errors</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">message</span><span class="p">);</span>
+  <span class="c1">// by default, it does the same</span>
+<span class="p">});</span>
+
+<span class="nx">db</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'close'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">code</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// by default, it logs "bye bye"</span>
+  <span class="c1">// invoked once the database has been closed</span>
+  <span class="c1">// and every statement in the queue executed</span>
+  <span class="c1">// the code is the exit code returned via SQLite3</span>
+  <span class="c1">// usually 0 if everything was OK</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'safe to get out of here ^_^_'</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+
+<p>The <code>close</code> event ensures that all operations have been successfully performed and your app is ready to exit or move next.</p>
+
+<p>Please note that after invoking <code>db.close()</code> any other query will be ignored and the instance will be put in a <em>waiting to complete</em> state which will invoke the <code>close</code> listener once operations have been completed.</p>
+
+<h3>
+<a name="raspberry-pi-performance" class="anchor" href="#raspberry-pi-performance"><span class="octicon octicon-link"></span></a>Raspberry Pi Performance</h3>
+
+<p>This is the output generated after a <code>make test</code> call in this repo folder within Arch Linux for RPi.</p>
+
+<pre><code>npm test
+
+&gt; dblite@0.1.2 test /home/dblite
+&gt; node test/.test.js
+
+/home/dblite/dblite.test.sqlite
+------------------------------
+main
+passes: 1, fails: 0, errors: 0
+------------------------------
+create table if not exists
+passes: 1, fails: 0, errors: 0
+------------------------------
+100 sequential inserts
+100 records in 3.067 seconds
+passes: 1, fails: 0, errors: 0
+------------------------------
+1 transaction with 100 inserts
+200 records in 0.178 seconds
+passes: 1, fails: 0, errors: 0
+------------------------------
+auto escape
+passes: 1, fails: 0, errors: 0
+------------------------------
+auto field
+fetched 201 rows as objects in 0.029 seconds
+passes: 1, fails: 0, errors: 0
+------------------------------
+auto parsing field
+fetched 201 rows as normalized objects in 0.038 seconds
+passes: 1, fails: 0, errors: 0
+------------------------------
+many selects at once
+different selects in 0.608 seconds
+passes: 1, fails: 0, errors: 0
+------------------------------
+db.query() arguments
+[ [ '1' ] ]
+[ [ '2' ] ]
+[ { id: 1 } ]
+[ { id: 2 } ]
+passes: 5, fails: 0, errors: 0
+------------------------------
+utf-8
+¥ · £ · € · $ · ¢ · ₡ · ₢ · ₣ · ₤ · ₥ · ₦ · ₧ · ₨ · ₩ · ₪ · ₫ · ₭ · ₮ · ₯ · ₹
+passes: 1, fails: 0, errors: 0
+------------------------------
+erease file
+passes: 1, fails: 0, errors: 0
+
+------------------------------
+          15 Passes
+------------------------------
+</code></pre>
+
+<p>If an SD card can do this good, I guess any other environment should not have problems here ;-)</p>
+
+<h3>
+<a name="faq" class="anchor" href="#faq"><span class="octicon octicon-link"></span></a>F.A.Q.</h3>
+
+<p>Here a list of probably common Q&amp;A about this module. Please do not hesitate to ask me more, if necessary, thanks.</p>
+
+<ul>
+<li>
+<strong>How Does It Work?</strong> <code>dblite</code> uses a <a href="http://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options">spawned</a> version of the <code>sqlite3</code> executable. It could theoretically work with any other SQL like database but it's tested with <code>sqlite3-shell</code> only</li>
+<li>
+<strong>Does It Spawn Per Each Query?</strong> this is a quick one: <strong>NO</strong>! <code>dblite</code> spawns once per each database file where usually there is only one database file opened per time.</li>
+<li>
+<p><strong>How About Memory And Performance?</strong> Accordingly with <code>node</code> manual:</p>
+
+<blockquote>
+<p>These child Nodes are still whole new instances of V8.
+Assume at least 30ms startup and 10mb memory for each new Node.
+That is, you cannot create many thousands of them.</p>
+</blockquote>
+
+<p>Since <code>dblite</code> spawns only once, there is a little overhead during the database initialization but that's pretty much it, the amount of RAM increases with the amount of data we save or retrieve from the database. The above <strong>Raspberry Pi Benchmark</strong> should ensure that with most common operation, and using transactions where possible, latency and RAM aren't a real issue.</p>
+</li>
+<li><p><strong>Why Not The Native One?</strong> I had some difficulty installing this <a href="https://github.com/developmentseed/node-sqlite3#name">node-sqlite3 module</a> due <code>node-gyp</code> incompatibilities with some <strong>ARM</strong> based device in both <em>Debian</em> and <em>ArchLinux</em>. Since I really needed an sqlite manager for the next version of <a href="https://github.com/WebReflection/polpetta#%E1%80%80-polpetta">polpetta</a> which aim is to have a complete, lightweight, and super fast web server in many embedded hardware such RPi, Cubieboard, and others, and since I needed something able to work with multiple core too, I've decided to try this road wrapping the native, easy to install and update, <code>sqlite3</code> shell client and do everything I need. So far, so good I would say ;-)</p></li>
+<li><p><strong>Isn't <code>params</code> and <code>fields</code> an ambiguous choice?</strong> At the very beginning I wasn't sure myself if that would have worked as API choice but later on I've changed my mind. First of all, it's very easy to spot special chars in the <code>SQL</code> statement. If present, params is mandatory and used, as easy as that. Secondly, if an object has functions as value, it's obviously a <code>fields</code> object, 'cause <code>params</code> cannot contains functions since these are not compatible with <code>JSON</code> serialization, neither meaningful for the database. The only case where <code>fields</code> might be confused with <code>params</code> is when no <code>params</code> has been specified, and <code>fields</code> is an <code>Array</code>. In this case I believe you are the same one that wrote the SQL too and know upfront if there are fields to retrieve from <code>params</code> or not so this is actually a <em>non real-world</em> problem and as soon as you try this API you'll realize it feels intuitive and right.</p></li>
+<li>
+<p><strong>Are Transactions Supported?</strong> ... <strong>YES</strong>, transactions are supported simply performing multiple queries as you would do in <em>sqlite3</em> shell:</p>
+
+<div class="highlight highlight-javascript"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'BEGIN TRANSACTION'</span><span class="p">);</span>
+<span class="k">for</span><span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'INSERT INTO table VALUES(?, ?)'</span><span class="p">,</span> <span class="p">[</span><span class="kc">null</span><span class="p">,</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">()]);</span>
+<span class="p">}</span>
+<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'COMMIT'</span><span class="p">);</span>
+</pre></div>
+
+<p>The test file has a transaction with 100 records in it, <a href="test/dblite.js">have a look</a>.</p>
+</li>
+<li>
+<p><strong>Can I Connect To A <code>:memory:</code> Database?</strong> well, you can do anything you would do with <code>sqlite3</code> shell so <strong>YES</strong></p>
+
+<div class="highlight highlight-javascript"><pre><span class="kd">var</span> <span class="nx">db</span> <span class="o">=</span> <span class="nx">dblite</span><span class="p">(</span><span class="s1">':memory:'</span><span class="p">);</span> <span class="c1">// that's it!</span>
+</pre></div>
+</li>
+</ul><h3>
+<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h3>
+
+<p>The usual Mit Style, thinking about the <a href="http://en.wikipedia.org/wiki/WTFPL">WTFPL</a> though ... stay tuned for updates.</p>
+
+<pre><code>Copyright (C) 2013 by WebReflection
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+</code></pre>
+      </section>
+    </div>
+    <footer>
+      <p>Project maintained by <a href="https://github.com/WebReflection">WebReflection</a></p>
+      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
+    </footer>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
