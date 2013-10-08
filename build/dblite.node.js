@@ -129,9 +129,9 @@ function dblite() {
 
   var
     // this is the delimiter of each sqlite3 shell command
-    SUPER_SECRET =  '---' +
-                    crypto.randomBytes(64).toString('base64') +
-                    '---',
+    SUPER_SECRET =  //'---' +
+                    crypto.randomBytes(64).toString('base64'),
+                    //'---',
     // ... I wish .print was introduced before SQLite 3.7.10 ...
     // this is a weird way to get rid of the header, if enabled
     SUPER_SECRET_SELECT = '"' + SUPER_SECRET + '" AS "' + SUPER_SECRET + '";' + EOL,
@@ -148,9 +148,11 @@ function dblite() {
       // executable only, folder needs to be specified a part
       bin.length === 1 ? bin[0] : ('.' + PATH_SEP + bin[bin.length - 1]),
       // normalize file path if not :memory:
-      // output MUST be csv
-      ['-csv'].concat(Array.prototype.slice.call(arguments, 1))
-              .concat(normalizeFilePath(arguments[0])),
+      normalizeFirstArgument(
+        // it is possible to eventually send extra sqlite3 args
+        // so all arguments are passed
+        Array.prototype.slice.call(arguments)
+      ).concat('-csv'), // but the output MUST be csv
       // be sure the dir is the right one
       {
         // the right folder is important or sqlite3 won't work
@@ -520,11 +522,12 @@ function enrichFields(key) {
 
 // if not a memory database
 // the file path should be resolved as absolute
-function normalizeFilePath(file) {
+function normalizeFirstArgument(args) {
+  var file = args[0];
   if (file !== ':memory:') {
-    file = path.resolve(file);
+    args[0] = path.resolve(args[0]);
   }
-  return file;
+  return args;
 }
 
 // assuming generated CSV is always like
