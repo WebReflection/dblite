@@ -126,11 +126,11 @@ function dblite() {
       // executable only, folder needs to be specified a part
       bin.length === 1 ? bin[0] : ('.' + PATH_SEP + bin[bin.length - 1]),
       // normalize file path if not :memory:
-      normalizeFirstArgument(
+      Array.prototype.reverse.call(normalizeFirstArgument(
         // it is possible to eventually send extra sqlite3 args
         // so all arguments are passed
         Array.prototype.slice.call(arguments)
-      ).concat('-csv'), // but the output MUST be csv
+      ).concat('-csv')), // but the output MUST be csv
       // be sure the dir is the right one
       {
         // the right folder is important or sqlite3 won't work
