@@ -5,7 +5,7 @@ a zero hassle wrapper for sqlite
 var dblite = require('dblite'),
     db = dblite('file.name');
 
-// asynchronous, fast, and ...
+// Asynchronous, fast, and ...
 db.query('SELECT * FROM table', function(rows) {
   // ... that easy!
 });
@@ -263,8 +263,8 @@ db.query('SELECT 1 as one, 2 as two', {two:Number}, function(rows) {
 In this way these two options can be supplementary when and if necessary.
 
 
-### Handling Infos And Errors
-The `EventEmitter` will notify any listener attached to `info` or `error` accordingly with the current status.
+### Handling Infos And Errors - Listeners
+The `EventEmitter` will notify any listener attached to `info`, `error`, or `close` accordingly with the current status.
 ```javascript
 db.on('info', function (data) {
   // show data returned by special syntax
@@ -278,7 +278,20 @@ db.on('error', function (message) {
   console.error(message);
   // by default, it does the same
 });
+
+db.on('close', function (code) {
+  // by default, it logs "bye bye"
+  // invoked once the database has been closed
+  // and every statement in the queue executed
+  // the code is the exit code returned via SQLite3
+  // usually 0 if everything was OK
+  console.log('safe to get out of here ^_^_');
+});
 ```
+The `close` event ensures that all operations have been successfully performed and your app is ready to exit or move next.
+
+Please note that after invoking `db.close()` any other query will be ignored and the instance will be put in a _waiting to complete_ state which will invoke the `close` listener once operations have been completed.
+
 
 ### Raspberry Pi Performance
 This is the output generated after a `make test` call in this repo folder within Arch Linux for RPi.
