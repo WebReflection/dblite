@@ -334,7 +334,17 @@ function dblite() {
     self.query(
       'SELECT ROWID FROM `' + table + '` ORDER BY ROWID DESC LIMIT 1',
       function(result){
-        (callback || log).call(self, result[0][0]);
+        var row = result[0], k;
+        // if headers are switched on
+        if (!(row instanceof Array)) {
+          for (k in row) {
+            if (row.hasOwnProperty(k)) {
+              row = [row[k]];
+              break;
+            }
+          }
+        }
+        (callback || log).call(self, row[0]);
       }
     );
     return self;

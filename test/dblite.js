@@ -393,5 +393,17 @@ wru.test([
           wru.assert('it did JSON.parse correctly', rows[0].value.some === 'text');
         }))
     }
+  },{
+    name: 'lastRowID with headers too',
+    test: function () {
+      dblite(':memory:')
+        .query('.headers ON')
+        .query('CREATE TABLE test (id INTEGER PRIMARY KEY)')
+        .query('INSERT INTO test VALUES (null)')
+        .lastRowID('test', wru.async(function (id) {
+          wru.assert(id == 1);
+        }))
+      ;
+    }
   }
 ]);
