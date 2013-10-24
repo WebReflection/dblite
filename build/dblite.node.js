@@ -212,8 +212,17 @@ function dblite() {
 
   // common error helper
   function onerror(data) {
-    // notify listeners, if any
-    if (self.listeners('error').length) {
+    if($callback && 1 < $callback.length) {  
+      // there is a callback waiting
+      // and there is more than an argument in there
+      // the callback is waiting for errors too
+      var callback = $callback;
+      wasSelect = wasNotSelect = dontParseCSV = false;
+      $callback = $fields = null;
+      // should the next be called ? next();
+      callback.call(self, data, null);
+    } else if(self.listeners('error').length) {
+      // notify listeners
       self.emit('error', '' + data);
     } else {
       // log the output avoiding exit 1
@@ -232,7 +241,7 @@ function dblite() {
   program.stdout.on('data', function (data) {
     /*jshint eqnull: true*/
     // big output might require more than a call
-    var str, result, callback, fields, headers, wasSelectLocal;
+    var str, result, callback, fields, headers, wasSelectLocal, rows;
     // the whole output is converted into a string here
     selectResult += data;
     // if the end of the output is the serapator
@@ -292,8 +301,7 @@ function dblite() {
         next();
         // if there was actually a callback to call
         if (callback) {
-          // invoke it with the db object as context
-          callback.call(self, fields ? (
+          rows = fields ? (
               // and if there was a need to parse each row
               isArray(fields) ?
                 // as object with properties
@@ -304,7 +312,14 @@ function dblite() {
             // go for it ... otherwise returns the result as it is:
             // an Array of Arrays
             result
-          );
+          ;
+          // if there was an error signature
+          if (1 < callback.length) {
+            callback.call(self, null, rows);
+          } else {
+            // invoke it with the db object as context
+            callback.call(self, rows);
+          }
         }
       } else {
         // not a select, just a special command

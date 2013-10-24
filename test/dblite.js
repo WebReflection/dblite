@@ -365,7 +365,7 @@ wru.test([
   },{
     name: 'notifies inserts or other operations too',
     test: function () {
-      var many = 0, db = dblite(':memory:');
+      var many = 0, db = dblite(':memory:').on('close', Object);
       db.query('CREATE TABLE IF NOT EXISTS `kvp` (id INTEGER PRIMARY KEY, key TEXT, value TEXT)');
       db.query('BEGIN TRANSACTION');
       while(many++ < 100) {
@@ -391,7 +391,8 @@ wru.test([
         }, wru.async(function(rows) {
           this.close();
           wru.assert('it did JSON.parse correctly', rows[0].value.some === 'text');
-        }))
+        })).on('close', Object)
+      ;
     }
   },{
     name: 'lastRowID with headers too',
@@ -401,9 +402,34 @@ wru.test([
         .query('CREATE TABLE test (id INTEGER PRIMARY KEY)')
         .query('INSERT INTO test VALUES (null)')
         .lastRowID('test', wru.async(function (id) {
+          this.close();
           wru.assert(id == 1);
-        }))
+        })).on('close', Object)
       ;
+    }
+  }, {
+    name: 'dual arguments with error behavior',
+    test: function () {
+      var done = wru.async(function (err, data) {
+        wru.assert('there is an error', err);
+        wru.assert('there is no data', data === null);
+      });
+      dblite(':memory:').query('CAUSING ERROR', function(err, data){
+        this.close();
+        done(err, data);
+      }).on('close', Object);
+    }
+  }, {
+    name: 'dual arguments with data behavior',
+    test: function () {
+      var done = wru.async(function (err, data) {
+        wru.assert('there is no error', !err);
+        wru.assert('there is some data', data == 123);
+      });
+      dblite(':memory:').query('SELECT 123', function(err, data){
+        this.close();
+        done(err, data);
+      }).on('close', Object);
     }
   }
 ]);

@@ -6,7 +6,7 @@ var dblite = require('dblite'),
     db = dblite('file.name');
 
 // Asynchronous, fast, and ...
-db.query('SELECT * FROM table', function(rows) {
+db.query('SELECT * FROM table', function(err, rows) {
   // ... that easy!
 });
 ```
@@ -34,7 +34,7 @@ db.query('.databases');
 db.query(
   'SELECT * FROM users WHERE pass = ?',
   [pass],
-  function (rows) {
+  function (err, rows) {
     var user = rows.length && rows[0];
   }
 );
@@ -201,6 +201,7 @@ db.query('SELECT * FROM test WHERE id = :id', {
 #### The callback:Function
 When a `SELECT` or a `PRAGMA` `SQL` is executed the module puts itself in a *waiting for results* state.
 
+**Update** - Starting from `0.4.0` the callback will be invoked with `err` and `data` if the callback length is greater than one. `function(err, data){}` VS `function(data){}`. However, latter mode will keep working in order to not break backward compatibility.
 **Update** - Starting from `0.3.3` every other `SQL` statement will invoke the callback after the operation has been completed.
 
 As soon as results are fully pushed to the output the module parses this result, if any, and send it to the specified callback.
@@ -222,7 +223,7 @@ db.query('INSERT INTO test VALUES(?, ?)', [
 db.query('SELECT * FROM test WHERE id = ?', [123], {
   id: Number,
   value: JSON.parse // value unserialized
-}, function (rows) {
+}, function (err, rows) {
   var record = rows[0];
   console.log(record.id); // 123
   console.log(record.value.name); // "dblite"
@@ -237,14 +238,14 @@ var dblite = require('dblite'),
     // passing extra argument at creation
     db = dblite('file.name', '-header');
 
-db.query('SELECT * FROM table', function(rows) {
+db.query('SELECT * FROM table', function(err, rows) {
   rows[0]; // {header0: value0, headerN: valueN}
 });
 
 // at runtime
 db
   .query('.headers ON')
-  .query('SELECT * FROM table', function(rows) {
+  .query('SELECT * FROM table', function(err, rows) {
     rows[0]; // {header0: value0, headerN: valueN}
   })
   .query('.headers OFF')
@@ -256,7 +257,7 @@ In version `0.3.2` a smarter approach for combined _headers/fields_ is used wher
 ```javascript
 var db = require('dblite')('file.name', '-header');
 
-db.query('SELECT 1 as one, 2 as two', {two:Number}, function(rows) {
+db.query('SELECT 1 as one, 2 as two', {two:Number}, function(err, rows) {
   rows[0]; // {one: "1", two: 2} // note "1" as String
 });
 ```
@@ -273,9 +274,9 @@ db.on('info', function (data) {
   // by default, it does the same
 });
 
-db.on('error', function (message) {
+db.on('error', function (err) {
   // same as `info` but for errors
-  console.error(message);
+  console.error(err.toString());
   // by default, it does the same
 });
 
@@ -288,6 +289,8 @@ db.on('close', function (code) {
   console.log('safe to get out of here ^_^_');
 });
 ```
+Please **note** that error is invoked only if the callback is not handling it already via double argument.
+
 The `close` event ensures that all operations have been successfully performed and your app is ready to exit or move next.
 
 Please note that after invoking `db.close()` any other query will be ignored and the instance will be put in a _waiting to complete_ state which will invoke the `close` listener once operations have been completed.
