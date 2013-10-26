@@ -411,7 +411,7 @@ wru.test([
     name: 'dual arguments with error behavior',
     test: function () {
       var done = wru.async(function (err, data) {
-        wru.assert('there is an error', err);
+        wru.assert('there is an error', err instanceof Error);
         wru.assert('there is no data', data === null);
       });
       dblite(':memory:').query('CAUSING ERROR', function(err, data){

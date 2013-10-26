@@ -157,6 +157,7 @@ function dblite() {
     // tells if current output needs to be processed
     wasSelect = false,
     wasNotSelect = false,
+    wasError = false,
     // forces the output not to be processed
     // might be handy in some case where it's passed around
     // as string instread of needing to serialize/unserialize
@@ -197,8 +198,9 @@ function dblite() {
       var callback = $callback;
       wasSelect = wasNotSelect = dontParseCSV = false;
       $callback = $fields = null;
+      wasError = true;
       // should the next be called ? next();
-      callback.call(self, data, null);
+      callback.call(self, new Error(data.toString()), null);
     } else if(self.listeners('error').length) {
       // notify listeners
       self.emit('error', '' + data);
@@ -220,6 +222,11 @@ function dblite() {
     /*jshint eqnull: true*/
     // big output might require more than a call
     var str, result, callback, fields, headers, wasSelectLocal, rows;
+    if (wasError) {
+      selectResult = '';
+      wasError = false;
+      return;
+    }
     // the whole output is converted into a string here
     selectResult += data;
     // if the end of the output is the serapator
