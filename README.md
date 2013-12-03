@@ -39,7 +39,7 @@ db.query(
   }
 );
 ```
-By default the `dblite` function uses **sqlite3 as exacutable**. If you need to change the path simply update `dblite.bin = "/usr/local/bin/sqlite3";` before invoking the function.
+By default the `dblite` function uses **sqlite3 as executable**. If you need to change the path simply update `dblite.bin = "/usr/local/bin/sqlite3";` before invoking the function.
 
 
 ### API
