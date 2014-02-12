@@ -431,5 +431,37 @@ wru.test([
         done(err, data);
       }).on('close', Object);
     }
+  },{
+    name: 'no problems on ABORT',
+    test: function () {
+
+      var
+        done = wru.async(function (message, test) {
+          wru.assert(message, test);
+          done = Object;
+        }
+      );
+
+      db = dblite(file);
+      db
+        .query('CREATE TABLE users (id INTEGER PRIMARY KEY ON CONFLICT REPLACE, email TEXT UNIQUE ON CONFLICT ABORT)')
+        .query('INSERT INTO users VALUES(?, ?)', [1, 'foo@example.com'])
+        .query('INSERT INTO users VALUES(?, ?)', [2, 'bar@example.com'], function(err, data) {
+          if (err) {
+            return done('it failed to insert data', err);
+          }
+          db
+            .query('INSERT INTO users VALUES(?, ?)', [1, 'bar@example.com'], function(err, data){
+              setTimeout(done, 1000, 'should have produced an error', err);
+            })
+            .query('SELECT * FROM users WHERE id = ?', [1], function(err, data) {
+              done('the error did not trigger', false);
+            })
+          ;
+        })
+        .on('close', Object)
+      ;
+
+    }
   }
 ]);
