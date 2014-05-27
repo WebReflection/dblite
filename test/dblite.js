@@ -363,6 +363,31 @@ wru.test([
       ;
     }
   },{
+    name: 'selecting empty results with manual fields works as expected',
+    test: function () {
+      dblite(':memory:')
+        .query('CREATE TABLE whatever (v TEXT)')
+        .query('SELECT * FROM whatever', {v:String}, wru.async(function (rows) {
+          wru.assert('invoked corectly', rows.length === 0);
+          this.close();
+        }))
+        .on('close', Object)
+      ;
+    }
+  },{
+    name: 'selecting empty results with automatic fields works as expected',
+    test: function () {
+      dblite(':memory:')
+        .query('.headers ON')
+        .query('CREATE TABLE whatever (v TEXT)')
+        .query('SELECT * FROM whatever', wru.async(function (rows) {
+          wru.assert('invoked corectly', rows.length === 0);
+          this.close();
+        }))
+        .on('close', Object)
+      ;
+    }
+  },{
     name: 'notifies inserts or other operations too',
     test: function () {
       var many = 0, db = dblite(':memory:').on('close', Object);

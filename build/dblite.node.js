@@ -280,7 +280,7 @@ function dblite() {
           // converting the CSV into an Array of rows
           result = dontParseCSV ? str : parseCSV(str);
           // if there were headers/fields and we have a result ...
-          if (headers && isArray(result)) {
+          if (headers && isArray(result) && result.length) {
             //  ... and fields is not defined
             if (fields == null) {
               // fields is the row 0
