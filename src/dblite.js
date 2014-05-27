@@ -97,7 +97,7 @@ var
  *                        db.query('SELECT table.a, table.other FROM table', ['a', 'b']);
  *                        [{a:'first value', b:'second'},{a:'row2 value', b:'row2'}]
  *
- *                        
+ *
  *                        db.query('SELECT table.a, table.other FROM table', ['a', 'b']);
  *                        [{a:'first value', b:'second'},{a:'row2 value', b:'row2'}]
  *  callback:Function
@@ -191,7 +191,7 @@ function dblite() {
 
   // common error helper
   function onerror(data) {
-    if($callback && 1 < $callback.length) {  
+    if($callback && 1 < $callback.length) {
       // there is a callback waiting
       // and there is more than an argument in there
       // the callback is waiting for errors too
@@ -258,7 +258,7 @@ function dblite() {
           // converting the CSV into an Array of rows
           result = dontParseCSV ? str : parseCSV(str);
           // if there were headers/fields and we have a result ...
-          if (headers && isArray(result)) {
+          if (headers && isArray(result) && result.length > 0) {
             //  ... and fields is not defined
             if (fields == null) {
               // fields is the row 0
