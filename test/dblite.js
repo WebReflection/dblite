@@ -456,6 +456,32 @@ wru.test([
         done(err, data);
       }).on('close', Object);
     }
+  }, {
+    name: 'using unsafe .ignoreErrors property',
+    test: function () {
+      var done = wru.async(function (err, data) {
+        wru.assert('there is no error', !err);
+        wru.assert('there is some data', data.length === 2);
+      });
+      var q = 'SELECT * FROM album ORDER BY name asc';
+      var db = dblite(':memory:');
+      db.ignoreErrors = true;
+      db
+        .query(q, function result(err, data) {
+          if (err) {
+            this
+              .query('CREATE TABLE album (id INTEGER PRIMARY KEY, name TEXT)')
+              .query('INSERT INTO album VALUES (null, "a")')
+              .query('INSERT INTO album VALUES (null, "b")')
+              .query(q, result)
+            ;
+          } else {
+            done(err, data);
+          }
+        })
+        .on('close', Object)
+      ;
+    }
   },{
     name: 'no problems on ABORT',
     test: function () {

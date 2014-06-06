@@ -247,6 +247,10 @@ function dblite() {
     if (wasError) {
       selectResult = '';
       wasError = false;
+      if (self.ignoreErrors) {
+        busy = false;
+        next();
+      }
       return;
     }
     // the whole output is converted into a string here
@@ -356,6 +360,13 @@ function dblite() {
     IS_NODE_06 = true;
     program.stdout.on('close', close);
   }
+
+  // WARNING: this can be very unsafe !!!
+  // if there is an error and this
+  // property is explicitly set to false
+  // it keeps running queries no matter what
+  self.ignoreErrors = false;
+  // - - - - - - - - - - - - - - - - - - - -
 
   // safely closes the process
   // will emit 'close' once done
