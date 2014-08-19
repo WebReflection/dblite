@@ -5,6 +5,9 @@ var dblite = require('../build/dblite.node.js'),
       'dblite.test.sqlite'
     ),
     db;
+
+// dblite.bin = '/Users/agiammarchi/Downloads/sqlite3';
+
 if (typeof wru === 'undefined') wru = require('wru');
 //:remove
 wru.log(file);

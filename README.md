@@ -17,6 +17,10 @@ More in [the related blogpost](http://webreflection.blogspot.com/2013/07/dblite-
 [![NPM](https://nodei.co/npm/dblite.png?downloads=true)](https://nodei.co/npm/dblite/)
 
 
+### Important
+Starting from **sqlite3** version `3.8.6` you need a "_new line agnostic_" version of `dblite`, right now represented by the latest version `0.6.0`. This **will break** compatibility with older version of the database cli.
+
+
 ### The What And The Why
 I've created `dblite` module because there's still not a simple and straight forward or standard way to have [sqlite](http://www.sqlite.org) in [node.js](http://nodejs.org) without requiring to re-compile, re-build, download sources a part or install dependencies instead of simply `apt-get install sqlite3` or `pacman -S sqlite3` in your \*nix system.
 

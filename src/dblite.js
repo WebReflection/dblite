@@ -35,12 +35,6 @@ var
   PATH_SEP = path.sep || (
     WIN32 ? '\\' : '/'
   ),
-  // what kind of End Of Line we have here ?
-  EOL = require('os').EOL || (
-    WIN32 ? '\r\n' : '\n'
-  ),
-  // what's EOL length? Used to properly parse data
-  EOL_LENGTH = EOL.length,
   // each dblite instance spawns a process once
   // and interact with that shell for the whole session
   // one spawn per database and no more (on avg 1 db is it)
@@ -49,12 +43,6 @@ var
   DECIMAL = /^[1-9][0-9]*$/,
   // verify if it's a select or not
   SELECT = /^(?:select|SELECT|pragma|PRAGMA) /,
-  // makes EOL safe for strings passed to the shell
-  SANITIZER = new RegExp("[;" + EOL.split('').map(function(c) {
-    return '\\x' + ('0' + c.charCodeAt(0).toString(16)).slice(-2);
-  }).join('') + "]+$"),
-  // used to mark the end of each line passed to the shell
-  SANITIZER_REPLACER = ';' + EOL,
   // for simple query replacements: WHERE field = ?
   REPLACE_QUESTIONMARKS = /\?/g,
   // for named replacements: WHERE field = :data
@@ -79,7 +67,61 @@ var
   paramsIndex,  // which index is the current
   paramsArray,  // which value when Array
   paramsObject, // which value when Object (named parameters)
-  IS_NODE_06 = false // dirty things to do there ...
+  IS_NODE_06 = false, // dirty things to do there ...
+  // defned later on
+  EOL, EOL_LENGTH,
+  SANITIZER, SANITIZER_REPLACER,
+  defineCSVEOL = function () {
+    defineCSVEOL = function () {};
+    var sqliteVersion = dblite.sqliteVersion ||
+                        process.env.SQLITE_VERSION ||
+                        '';
+
+    sqliteVersion = String(dblite.sqliteVersion || '')
+      .replace(/[^.\d]/g, '')
+      .split('.')
+    ;
+
+    // what kind of End Of Line we have here ?
+    EOL = sqliteVersion.length && sqliteVersion.filter(function (n, i) {
+      n = parseInt(n, 10);
+      switch (i) {
+        case 0:
+          return n >= 3;
+        case 1:
+          return n >= 8;
+        case 2:
+          return n >= 6;
+      }
+      return false;
+    }).length === sqliteVersion.length ?
+      '\r\n' :
+      require('os').EOL || (
+        WIN32 ? '\r\n' : '\n'
+      )
+    ;
+
+    // what's EOL length? Used to properly parse data
+    EOL_LENGTH = EOL.length;
+
+    // makes EOL safe for strings passed to the shell
+    SANITIZER = new RegExp("[;" + EOL.split('').map(function(c) {
+      return '\\x' + ('0' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join('') + "]+$");
+
+    // used to mark the end of each line passed to the shell
+    SANITIZER_REPLACER = ';' + EOL;
+
+    if (!sqliteVersion.length) {
+      console.warn([
+        '[WARNING] sqlite 3.8.6 changed CSV output',
+        'please specify your sqlite version',
+        'via `dblite.sqliteVersion = "3.8.5";`',
+        'or via SQLITE_VERSION=3.8.5'
+      ].join(EOL));
+    }
+
+  }
 ;
 
 /**
@@ -104,7 +146,7 @@ var
  * );
  */
 function dblite() {
-
+  defineCSVEOL();
   var
     // this is the delimiter of each sqlite3 shell command
     SUPER_SECRET =  '---' +
@@ -558,6 +600,7 @@ function normalizeFirstArgument(args) {
 // 2,"what's up",everEOL
 // this parser works like a charm
 function parseCSV(output) {
+  defineCSVEOL();
   for(var
     fields = [],
     rows = [],
@@ -700,6 +743,7 @@ function row2parsed(row) {
 // making them compatible with SQLite types
 // or useful for JavaScript once retrieved back
 function escape(what) {
+  defineCSVEOL();
   /*jshint eqnull: true*/
   switch (typeof what) {
     case 'string':
