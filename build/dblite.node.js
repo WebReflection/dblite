@@ -846,6 +846,14 @@ Object.defineProperty(
   }
 );
 
+// starting from v0.6.0 sqlite version shuold be specified
+// specially if SQLite version is 3.8.6 or greater
+// var dblite = require('dblite').withSQLite('3.8.6')
+dblite.withSQLite = function (sqliteVersion) {
+    dblite.sqliteVersion = sqliteVersion;
+    return dblite;
+};
+
 // to manually parse CSV data if necessary
 // mainly to be able to use db.plain(SQL)
 // without parsing it right away and pass the string
