@@ -444,25 +444,25 @@ That is, you cannot create many thousands of them.</p>
 
 <p>Since <code>dblite</code> spawns only once, there is a little overhead during the database initialization but that's pretty much it, the amount of RAM increases with the amount of data we save or retrieve from the database. The above <strong>Raspberry Pi Benchmark</strong> should ensure that with most common operation, and using transactions where possible, latency and RAM aren't a real issue.</p>
 </li>
-<li><p><strong>Why Not The Native One?</strong> I had some difficulty installing this <a href="https://github.com/developmentseed/node-sqlite3#name">node-sqlite3 module</a> due <code>node-gyp</code> incompatibilities with some <strong>ARM</strong> based device in both <em>Debian</em> and <em>ArchLinux</em>. Since I really needed an sqlite manager for the next version of <a href="https://github.com/WebReflection/polpetta#%E1%80%80-polpetta">polpetta</a> which aim is to have a complete, lightweight, and super fast web server in many embedded hardware such RPi, Cubieboard, and others, and since I needed something able to work with multiple core too, I've decided to try this road wrapping the native, easy to install and update, <code>sqlite3</code> shell client and do everything I need. So far, so good I would say ;-)</p></li>
-<li><p><strong>Isn't <code>params</code> and <code>fields</code> an ambiguous choice?</strong> At the very beginning I wasn't sure myself if that would have worked as API choice but later on I've changed my mind. First of all, it's very easy to spot special chars in the <code>SQL</code> statement. If present, params is mandatory and used, as easy as that. Secondly, if an object has functions as value, it's obviously a <code>fields</code> object, 'cause <code>params</code> cannot contains functions since these are not compatible with <code>JSON</code> serialization, neither meaningful for the database. The only case where <code>fields</code> might be confused with <code>params</code> is when no <code>params</code> has been specified, and <code>fields</code> is an <code>Array</code>. In this case I believe you are the same one that wrote the SQL too and know upfront if there are fields to retrieve from <code>params</code> or not so this is actually a <em>non real-world</em> problem and as soon as you try this API you'll realize it feels intuitive and right.</p></li>
 <li>
-<p><strong>Are Transactions Supported?</strong> ... <strong>YES</strong>, transactions are supported simply performing multiple queries as you would do in <em>sqlite3</em> shell:</p>
-
-<div class="highlight highlight-javascript"><pre><span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'BEGIN TRANSACTION'</span><span class="p">);</span>
-<span class="k">for</span><span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'INSERT INTO table VALUES(?, ?)'</span><span class="p">,</span> <span class="p">[</span><span class="kc">null</span><span class="p">,</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">()]);</span>
-<span class="p">}</span>
-<span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">'COMMIT'</span><span class="p">);</span>
-</pre></div>
-
-<p>The test file has a transaction with 100 records in it, <a href="test/dblite.js">have a look</a>.</p>
-</li>
+<strong>Why Not The Native One?</strong> I had some difficulty installing this <a href="https://github.com/developmentseed/node-sqlite3#name">node-sqlite3 module</a> due <code>node-gyp</code> incompatibilities with some <strong>ARM</strong> based device in both <em>Debian</em> and <em>ArchLinux</em>. Since I really needed an sqlite manager for the next version of <a href="https://github.com/WebReflection/polpetta#%E1%80%80-polpetta">polpetta</a> which aim is to have a complete, lightweight, and super fast web server in many embedded hardware such RPi, Cubieboard, and others, and since I needed something able to work with multiple core too, I've decided to try this road wrapping the native, easy to install and update, <code>sqlite3</code> shell client and do everything I need. So far, so good I would say ;-)</li>
 <li>
-<p><strong>Can I Connect To A <code>:memory:</code> Database?</strong> well, you can do anything you would do with <code>sqlite3</code> shell so <strong>YES</strong></p>
-
-<div class="highlight highlight-javascript"><pre><span class="kd">var</span> <span class="nx">db</span> <span class="o">=</span> <span class="nx">dblite</span><span class="p">(</span><span class="s1">':memory:'</span><span class="p">);</span> <span class="c1">// that's it!</span>
-</pre></div>
+<strong>Isn't <code>params</code> and <code>fields</code> an ambiguous choice?</strong> At the very beginning I wasn't sure myself if that would have worked as API choice but later on I've changed my mind. First of all, it's very easy to spot special chars in the <code>SQL</code> statement. If present, params is mandatory and used, as easy as that. Secondly, if an object has functions as value, it's obviously a <code>fields</code> object, 'cause <code>params</code> cannot contains functions since these are not compatible with <code>JSON</code> serialization, neither meaningful for the database. The only case where <code>fields</code> might be confused with <code>params</code> is when no <code>params</code> has been specified, and <code>fields</code> is an <code>Array</code>. In this case I believe you are the same one that wrote the SQL too and know upfront if there are fields to retrieve from <code>params</code> or not so this is actually a <em>non real-world</em> problem and as soon as you try this API you'll realize it feels intuitive and right.</li>
+<li>
+<strong>Are Transactions Supported?</strong> ... <strong>YES</strong>, transactions are supported simply performing multiple queries as you would do in <em>sqlite3</em> shell:
+<code>javascript
+  db.query('BEGIN TRANSACTION');
+  for(var i = 0; i &lt; 100; i++) {
+    db.query('INSERT INTO table VALUES(?, ?)', [null, Math.random()]);
+  }
+  db.query('COMMIT');
+</code>
+The test file has a transaction with 100 records in it, <a href="test/dblite.js">have a look</a>.</li>
+<li>
+<strong>Can I Connect To A <code>:memory:</code> Database?</strong> well, you can do anything you would do with <code>sqlite3</code> shell so <strong>YES</strong>
+<code>javascript
+var db = dblite(':memory:'); // that's it!
+</code>
 </li>
 </ul><h3>
 <a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h3>
