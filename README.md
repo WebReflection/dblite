@@ -2,7 +2,7 @@ dblite
 ======
 a zero hassle wrapper for sqlite
 ```javascript
-var dblite = require('dblite'),
+var dblite = require('dblite').withSQLite('3.8.6+'),
     db = dblite('file.name');
 
 // Asynchronous, fast, and ...
@@ -18,7 +18,17 @@ More in [the related blogpost](http://webreflection.blogspot.com/2013/07/dblite-
 
 
 ### Important
-Starting from **sqlite3** version `3.8.6` you need a "_new line agnostic_" version of `dblite`, right now represented by the latest version `0.6.0`. This **will break** compatibility with older version of the database cli.
+Starting from **sqlite3** version `3.8.6` you need a "_new line agnostic_" version of `dblite`, right now represented by the latest version `0.6.0`.
+
+This **will break** compatibility with older version of the database cli.
+
+```js
+// old version
+var dblite = require('dblite');
+
+// NEW VERSION
+var dblite = require('dblite').withSQLite('3.8.6+');
+```
 
 
 ### The What And The Why
