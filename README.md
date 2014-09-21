@@ -123,6 +123,12 @@ db.query('SELECT * FROM test');
 // [ [ '1', 'some text' ] ]
 ```
 
+##### Warning!
+This library heavily relies on strings and it normalizes them through special escaping which aim is to make passed data safe and secure which should be goal #1 of each db oriented API.
+
+Please **do not pass datamanually** like `INSERT INTO table VALUES (null, 'my@email.com')` and always use, specially for any field that contains strings, the provided API: `INSERT INTO table VALUES (null, '@email')` and `{emaiL: 'my@email.com'}`. These kind of operations are described in the following paragraphs.
+
+
 #### The params:Array|Object
 If the SQL string **contains special chars** such `?`, `:key`, `$key`, or `@key` properties, these will be replaced accordingly with the `params` `Array` or `Object` that, in this case, MUST be present.
 ```javascript
