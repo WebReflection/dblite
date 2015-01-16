@@ -773,11 +773,15 @@ function escape(what) {
         SINGLE_QUOTES, SINGLE_QUOTES_DOUBLED
       ) + "'";
     case 'object':
-      return what == null ?
-        'null' :
-        ("'" + JSON.stringify(what).replace(
-          SINGLE_QUOTES, SINGLE_QUOTES_DOUBLED
-        ) + "'")
+		if (what == null) {
+			return 'null';
+		} else if (Buffer.isBuffer(what)) {
+			return "X'" + what.toString('hex') + "'";
+		} else {
+			return ("'" + JSON.stringify(what).replace(
+				SINGLE_QUOTES, SINGLE_QUOTES_DOUBLED
+			) + "'");
+		}
       ;
     // SQLite has no Boolean type
     case 'boolean':
