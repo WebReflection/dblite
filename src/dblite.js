@@ -754,7 +754,7 @@ function escape(what) {
 		if (what == null) {
 			return 'null';
 		} else if (Buffer.isBuffer(what)) {
-			return "X'" + what.toString('hex');
+			return "X'" + what.toString('hex') + "'";
 		} else {
 			return ("'" + JSON.stringify(what).replace(
 				SINGLE_QUOTES, SINGLE_QUOTES_DOUBLED
