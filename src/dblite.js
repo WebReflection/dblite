@@ -286,6 +286,7 @@ function dblite() {
       selectResult = '';
       // makes the spawned program not busy anymore
       busy = false;
+		//console.log(selectResult);
       // if it was a select
       if (wasSelect || wasNotSelect) {
         wasSelectLocal = wasSelect;
@@ -677,6 +678,7 @@ function parseFields($fields) {
       )
     ;
   }
+
   return {f: fields, p: parsers};
 }
 
@@ -734,7 +736,11 @@ function row2parsed(row) {
     length = fields.length,
     i = 0; i < length; i++
   ) {
-    out[fields[i]] = parsers[i](row[i]);
+	  if (parsers[i] === Buffer) {
+		  out[fields[i]] = parsers[i](row[i], 'hex');
+	  } else {
+		  out[fields[i]] = parsers[i](row[i], 'hex');
+	  }
   }
   return out;
 }

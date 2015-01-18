@@ -527,15 +527,16 @@ wru.test([
 
 			var buffer = new Buffer(120);
 			buffer.fill(Math.floor((Math.random() * 1000) + 1));
+			buffer = require('crypto').createHash('sha256').update(buffer).digest();
 
 			var db = dblite(':memory:');
-			db.query('CREATE TABLE blobtest (v BINARY(120))')
+			db.query('CREATE TABLE blobtest (v BINARY(32))')
 			  .query('INSERT INTO blobtest(v) VALUES($v)', {v: buffer}, function (err) {
 					if (err) {
 						return done('it failed to insert blob', err);
 					}
 
-					db.query("SELECT v FROM blobtest", {v: Buffer}, function (err, rows) {
+					db.query("SELECT hex(v) FROM blobtest", {'v' : Buffer}, function (err, rows) {
 						if (err) {
 							return done('it faild to select buffer data', err);
 						}
