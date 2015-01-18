@@ -253,6 +253,22 @@ db.query('SELECT * FROM test WHERE id = ?', [123], {
 });
 ```
 
+#### Buffer serialization
+
+It's possible to write BLOB to database like other values (boolean, number, string, null).
+
+```javascript
+db.query('INSERT INTO test VALUES(?)', [
+  new Buffer([1, 2, 3]) // value will be serialize to hex and then passed to database, database will convert hex to blob/binary
+]);
+```
+
+To get blob/binary field need to provide **hex** function on this field and set **Buffer** type to returning value: 
+
+```javascript
+db.query('SELECT hex(blob) FROM test', {blob: Buffer }); // "blob" field will be converted to buffer automatically
+```
+
 ### Automatic Fields Through Headers
 Since version `0.3.0` it is possible to enable automatic fields parsing either through initialization (suggested) or at runtime.
 ```javascript
