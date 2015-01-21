@@ -739,7 +739,7 @@ function row2parsed(row) {
 	  if (parsers[i] === Buffer) {
 		  out[fields[i]] = parsers[i](row[i], 'hex');
 	  } else {
-		  out[fields[i]] = parsers[i](row[i], 'hex');
+		  out[fields[i]] = parsers[i](row[i]);
 	  }
   }
   return out;
