@@ -1,6 +1,6 @@
 {
   "version": "0.6.1",
-  "license" : "MIT",
+  "license": "MIT",
   "engine": "node >= 0.6.0",
   "name": "dblite",
   "description": "a zero hassle wrapper for sqlite - requires sqlite3 3.8.6 or greater",
@@ -33,5 +33,9 @@
   "main": "./build/dblite.node.js",
   "scripts": {
     "test": "node test/.test.js"
+  },
+  "devDependencies": {
+    "jshint": "^2.5.11",
+    "wru": "^0.2.7"
   }
 }
