@@ -21,7 +21,7 @@ THE SOFTWARE.
 
 */
 /*!
-Copyright (C) 2013 by WebReflection
+Copyright (C) 2015 by WebReflection
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -93,54 +93,68 @@ var
   // defned later on
   EOL, EOL_LENGTH,
   SANITIZER, SANITIZER_REPLACER,
-  defineCSVEOL = function () {
-    defineCSVEOL = function () {};
-    var sqliteVersion = dblite.sqliteVersion ||
-                        process.env.SQLITE_VERSION ||
-                        '';
-
-    sqliteVersion = String(dblite.sqliteVersion || '')
-      .replace(/[^.\d]/g, '')
-      .split('.')
-    ;
-
-    // what kind of End Of Line we have here ?
-    EOL = sqliteVersion.length && sqliteVersion.filter(function (n, i) {
-      n = parseInt(n, 10);
-      switch (i) {
-        case 0:
-          return n >= 3;
-        case 1:
-          return n >= 8;
-        case 2:
-          return n >= 6;
+  waitForEOLToBeDefined = [],
+  createProgram = function () {
+    for (var args = [], i = 0; i < arguments.length; i++) {
+      args[i] = arguments[i];
+    }
+    return spawn(
+      // executable only, folder needs to be specified a part
+      bin.length === 1 ? bin[0] : ('.' + PATH_SEP + bin[bin.length - 1]),
+      // normalize file path if not :memory:
+      normalizeFirstArgument(
+        // it is possible to eventually send extra sqlite3 args
+        // so all arguments are passed
+        args
+      ).concat('-csv') // but the output MUST be csv
+       .reverse(),     // see https://github.com/WebReflection/dblite/pull/12
+      // be sure the dir is the right one
+      {
+        // the right folder is important or sqlite3 won't work
+        cwd: bin.slice(0, -1).join(PATH_SEP) || process.cwd(),
+        env: process.env, // same env is OK
+        encoding: 'utf8', // utf8 is OK
+        detached: true,   // asynchronous
+        stdio: ['pipe', 'pipe', 'pipe'] // handled here
       }
-      return false;
-    }).length === sqliteVersion.length ?
-      '\r\n' :
-      require('os').EOL || (
-        WIN32 ? '\r\n' : '\n'
-      )
-    ;
+    );
+  },
+  defineCSVEOL = function (fn) {
 
-    // what's EOL length? Used to properly parse data
-    EOL_LENGTH = EOL.length;
+    if (waitForEOLToBeDefined.push(fn) === 1) {
 
-    // makes EOL safe for strings passed to the shell
-    SANITIZER = new RegExp("[;" + EOL.split('').map(function(c) {
-      return '\\x' + ('0' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join('') + "]+$");
+      var program = createProgram(':memory:');
 
-    // used to mark the end of each line passed to the shell
-    SANITIZER_REPLACER = ';' + EOL;
+      program.stdout.on('data', function ondata(data) {
 
-    if (!sqliteVersion.length) {
-      console.warn([
-        '[WARNING] sqlite 3.8.6 changed CSV output',
-        'please specify your sqlite version',
-        'via `dblite.sqliteVersion = "3.8.5";`',
-        'or via SQLITE_VERSION=3.8.5'
-      ].join(EOL));
+        // habemus CSV used EOL \o/
+        EOL = data.toString().slice(1);
+
+        // what's EOL length? Used to properly parse data
+        EOL_LENGTH = EOL.length;
+
+        // makes EOL safe for strings passed to the shell
+        SANITIZER = new RegExp("[;" + EOL.split('').map(function(c) {
+          return '\\x' + ('0' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join('') + "]+$");
+
+        // used to mark the end of each line passed to the shell
+        SANITIZER_REPLACER = ';' + EOL;
+
+        // once closed, reassign this helper
+        // and trigger all queued functions
+        program.on('close', function () {console.log('FINE');
+          defineCSVEOL = function (fn) { fn(); };
+          waitForEOLToBeDefined.forEach(defineCSVEOL);
+          waitForEOLToBeDefined = null;
+        });
+
+        program.kill();
+
+      });
+
+      program.stdin.write('SELECT 1;\r\n');
+
     }
 
   }
@@ -168,46 +182,15 @@ var
  * );
  */
 function dblite() {
-  defineCSVEOL();
   var
-    // this is the delimiter of each sqlite3 shell command
-    SUPER_SECRET =  '---' +
-                    crypto.randomBytes(64).toString('base64') +
-                    '---',
-    // ... I wish .print was introduced before SQLite 3.7.10 ...
-    // this is a weird way to get rid of the header, if enabled
-    SUPER_SECRET_SELECT = '"' + SUPER_SECRET + '" AS "' + SUPER_SECRET + '";' + EOL,
-    // used to check the end of a buffer
-    SUPER_SECRET_LENGTH = -(SUPER_SECRET.length + EOL_LENGTH),
+    args = arguments,
+    // the current dblite "instance"
+    self = new EventEmitter(),
     // the incrementally concatenated buffer
     // cleaned up as soon as the current command has been completed
     selectResult = '',
-    // the current dblite "instance"
-    self = new EventEmitter(),
-    // usually the database file or ':memory:' only
-    // the "spawned once" program, will be used for the whole session
-    program = spawn(
-      // executable only, folder needs to be specified a part
-      bin.length === 1 ? bin[0] : ('.' + PATH_SEP + bin[bin.length - 1]),
-      // normalize file path if not :memory:
-      normalizeFirstArgument(
-        // it is possible to eventually send extra sqlite3 args
-        // so all arguments are passed
-        Array.prototype.slice.call(arguments)
-      ).concat('-csv') // but the output MUST be csv
-       .reverse(),     // see https://github.com/WebReflection/dblite/pull/12
-      // be sure the dir is the right one
-      {
-        // the right folder is important or sqlite3 won't work
-        cwd: bin.slice(0, -1).join(PATH_SEP) || process.cwd(),
-        env: process.env, // same env is OK
-        encoding: 'utf8', // utf8 is OK
-        detached: true,   // asynchronous
-        stdio: ['pipe', 'pipe', 'pipe'] // handled here
-      }
-    ),
     // sqlite3 shell can produce one output per time
-    // evey operation performed through this wrapper
+    // every operation performed through this wrapper
     // should not bother the program until next
     // available slot. This queue helps keeping
     // requests ordered without stressing the system
@@ -217,7 +200,9 @@ function dblite() {
     // set as true only once db.close() has been called
     notWorking = false,
     // marks the shell busy or not
-    busy = false,
+    // initially we need to wait for the EOL
+    // so it's busy by default
+    busy = true,
     // tells if current output needs to be processed
     wasSelect = false,
     wasNotSelect = false,
@@ -230,10 +215,165 @@ function dblite() {
     // one callback per time will be notified
     $callback,
     // recycled variable for fields operation
-    $fields
+    $fields,
+    // this will be the delimiter of each sqlite3 shell command
+    SUPER_SECRET,
+    SUPER_SECRET_SELECT,
+    SUPER_SECRET_LENGTH,
+    // the spawned program
+    program
   ;
 
-  SUPER_SECRET += EOL;
+  defineCSVEOL(function () {
+
+    // this is the delimiter of each sqlite3 shell command
+    SUPER_SECRET =  '---' +
+                    crypto.randomBytes(64).toString('base64') +
+                    '---';
+    // ... I wish .print was introduced before SQLite 3.7.10 ...
+    // this is a weird way to get rid of the header, if enabled
+    SUPER_SECRET_SELECT = '"' + SUPER_SECRET + '" AS "' + SUPER_SECRET + '";' + EOL;
+    // used to check the end of a buffer
+    SUPER_SECRET_LENGTH = -(SUPER_SECRET.length + EOL_LENGTH);
+    // add the EOL to the secret
+    SUPER_SECRET += EOL;
+
+    // define the spawn program
+    program = createProgram.apply(null, args);
+
+    // and all its IO handled here
+    program.stderr.on('data', onerror);
+    program.stdin.on('error', onerror);
+    program.stdout.on('error', onerror);
+    program.stderr.on('error', onerror);
+
+    // invoked each time the sqlite3 shell produces an output
+    program.stdout.on('data', function (data) {
+      /*jshint eqnull: true*/
+      // big output might require more than a call
+      var str, result, callback, fields, headers, wasSelectLocal, rows;
+      if (wasError) {
+        selectResult = '';
+        wasError = false;
+        if (self.ignoreErrors) {
+          busy = false;
+          next();
+        }
+        return;
+      }
+      // the whole output is converted into a string here
+      selectResult += data;
+      // if the end of the output is the serapator
+      if (selectResult.slice(SUPER_SECRET_LENGTH) === SUPER_SECRET) {
+        // time to move forward since sqlite3 has done
+        str = selectResult.slice(0, SUPER_SECRET_LENGTH);
+        // drop the secret header if present
+        headers = str.slice(SUPER_SECRET_LENGTH) === SUPER_SECRET;
+        if (headers) str = str.slice(0, SUPER_SECRET_LENGTH);
+        // clean up the outer variabls
+        selectResult = '';
+        // makes the spawned program not busy anymore
+        busy = false;
+        // if it was a select
+        if (wasSelect || wasNotSelect) {
+          wasSelectLocal = wasSelect;
+          // set as false all conditions
+          // only here dontParseCSV could have been true
+          // set to false that too
+          wasSelect = wasNotSelect = dontParseCSV = busy;
+          // which callback should be invoked?
+          // last expected one for this round
+          callback = $callback;
+          // same as fields
+          fields = $fields;
+          // parse only if it was a select/pragma
+          if (wasSelectLocal) {
+            // unless specified, process the string
+            // converting the CSV into an Array of rows
+            result = dontParseCSV ? str : parseCSV(str);
+            // if there were headers/fields and we have a result ...
+            if (headers && isArray(result) && result.length) {
+              //  ... and fields is not defined
+              if (fields == null) {
+                // fields is the row 0
+                fields = result[0];
+              } else if(!isArray(fields)) {
+                // per each non present key, enrich the fields object
+                // it is then possible to have automatic headers
+                // with some known field validated/parsed
+                // e.g. {id:Number} will be {id:Number, value:String}
+                // if the query was SELECT id, value FROM table
+                // and the fields object was just {id:Number}
+                // but headers were active
+                result[0].forEach(enrichFields, fields);
+              }
+              // drop the first row with headers
+              result.shift();
+            }
+          }
+          // but next query, should not have
+          // previously set callbacks or fields
+          $callback = $fields = null;
+          // the spawned program can start a new job without current callback
+          // being able to push another job as soon as executed. This makes
+          // the queue fair for everyone without granting priority to anyone.
+          next();
+          // if there was actually a callback to call
+          if (callback) {
+            rows = fields ? (
+                // and if there was a need to parse each row
+                isArray(fields) ?
+                  // as object with properties
+                  result.map(row2object, fields) :
+                  // or object with validated properties
+                  result.map(row2parsed, parseFields(fields))
+              ) :
+              // go for it ... otherwise returns the result as it is:
+              // an Array of Arrays
+              result
+            ;
+            // if there was an error signature
+            if (1 < callback.length) {
+              callback.call(self, null, rows);
+            } else {
+              // invoke it with the db object as context
+              callback.call(self, rows);
+            }
+          }
+        } else {
+          // not a select, just a special command
+          // such .databases or .tables
+          next();
+          // if there is something to notify
+          if (str.length) {
+            // and if there was an 'info' listener
+            if (self.listeners('info').length) {
+              // notify
+              self.emit('info', EOL + str);
+            } else {
+              // otherwise log
+              log(EOL + str);
+            }
+          }
+        }
+      }
+    });
+
+    // detach the program from this one
+    // node 0.6 has not unref
+    if (program.unref) {
+      program.on('close', close);
+      program.unref();
+    } else {
+      IS_NODE_06 = true;
+      program.stdout.on('close', close);
+    }
+
+    // let's begin
+    busy = false;
+    next();
+
+  });
 
   // when program is killed or closed for some reason
   // the dblite object needs to be notified too
@@ -273,134 +413,6 @@ function dblite() {
       // if no listener was added
       console.error('' + data);
     }
-  }
-
-  // all IO handled here
-  program.stderr.on('data', onerror);
-  program.stdin.on('error', onerror);
-  program.stdout.on('error', onerror);
-  program.stderr.on('error', onerror);
-
-  // invoked each time the sqlite3 shell produces an output
-  program.stdout.on('data', function (data) {
-    /*jshint eqnull: true*/
-    // big output might require more than a call
-    var str, result, callback, fields, headers, wasSelectLocal, rows;
-    if (wasError) {
-      selectResult = '';
-      wasError = false;
-      if (self.ignoreErrors) {
-        busy = false;
-        next();
-      }
-      return;
-    }
-    // the whole output is converted into a string here
-    selectResult += data;
-    // if the end of the output is the serapator
-    if (selectResult.slice(SUPER_SECRET_LENGTH) === SUPER_SECRET) {
-      // time to move forward since sqlite3 has done
-      str = selectResult.slice(0, SUPER_SECRET_LENGTH);
-      // drop the secret header if present
-      headers = str.slice(SUPER_SECRET_LENGTH) === SUPER_SECRET;
-      if (headers) str = str.slice(0, SUPER_SECRET_LENGTH);
-      // clean up the outer variabls
-      selectResult = '';
-      // makes the spawned program not busy anymore
-      busy = false;
-      // if it was a select
-      if (wasSelect || wasNotSelect) {
-        wasSelectLocal = wasSelect;
-        // set as false all conditions
-        // only here dontParseCSV could have been true
-        // set to false that too
-        wasSelect = wasNotSelect = dontParseCSV = busy;
-        // which callback should be invoked?
-        // last expected one for this round
-        callback = $callback;
-        // same as fields
-        fields = $fields;
-        // parse only if it was a select/pragma
-        if (wasSelectLocal) {
-          // unless specified, process the string
-          // converting the CSV into an Array of rows
-          result = dontParseCSV ? str : parseCSV(str);
-          // if there were headers/fields and we have a result ...
-          if (headers && isArray(result) && result.length) {
-            //  ... and fields is not defined
-            if (fields == null) {
-              // fields is the row 0
-              fields = result[0];
-            } else if(!isArray(fields)) {
-              // per each non present key, enrich the fields object
-              // it is then possible to have automatic headers
-              // with some known field validated/parsed
-              // e.g. {id:Number} will be {id:Number, value:String}
-              // if the query was SELECT id, value FROM table
-              // and the fields object was just {id:Number}
-              // but headers were active
-              result[0].forEach(enrichFields, fields);
-            }
-            // drop the first row with headers
-            result.shift();
-          }
-        }
-        // but next query, should not have
-        // previously set callbacks or fields
-        $callback = $fields = null;
-        // the spawned program can start a new job without current callback
-        // being able to push another job as soon as executed. This makes
-        // the queue fair for everyone without granting priority to anyone.
-        next();
-        // if there was actually a callback to call
-        if (callback) {
-          rows = fields ? (
-              // and if there was a need to parse each row
-              isArray(fields) ?
-                // as object with properties
-                result.map(row2object, fields) :
-                // or object with validated properties
-                result.map(row2parsed, parseFields(fields))
-            ) :
-            // go for it ... otherwise returns the result as it is:
-            // an Array of Arrays
-            result
-          ;
-          // if there was an error signature
-          if (1 < callback.length) {
-            callback.call(self, null, rows);
-          } else {
-            // invoke it with the db object as context
-            callback.call(self, rows);
-          }
-        }
-      } else {
-        // not a select, just a special command
-        // such .databases or .tables
-        next();
-        // if there is something to notify
-        if (str.length) {
-          // and if there was an 'info' listener
-          if (self.listeners('info').length) {
-            // notify
-            self.emit('info', EOL + str);
-          } else {
-            // otherwise log
-            log(EOL + str);
-          }
-        }
-      }
-    }
-  });
-
-  // detach the program from this one
-  // node 0.6 has not unref
-  if (program.unref) {
-    program.on('close', close);
-    program.unref();
-  } else {
-    IS_NODE_06 = true;
-    program.stdout.on('close', close);
   }
 
   // WARNING: this can be very unsafe !!!
@@ -622,7 +634,10 @@ function normalizeFirstArgument(args) {
 // 2,"what's up",everEOL
 // this parser works like a charm
 function parseCSV(output) {
-  defineCSVEOL();
+  /*jshint eqnull: true*/
+  if (EOL == null) throw new Error(
+    'SQLite EOL not found. Please connect to a database first'
+  );
   for(var
     fields = [],
     rows = [],
@@ -765,8 +780,10 @@ function row2parsed(row) {
 // making them compatible with SQLite types
 // or useful for JavaScript once retrieved back
 function escape(what) {
-  defineCSVEOL();
   /*jshint eqnull: true*/
+  if (EOL == null) throw new Error(
+    'SQLite EOL not found. Please connect to a database first'
+  );
   switch (typeof what) {
     case 'string':
       return "'" + what.replace(
