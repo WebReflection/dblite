@@ -2,7 +2,7 @@ dblite
 ======
 a zero hassle wrapper for sqlite
 ```javascript
-var dblite = require('dblite').withSQLite('3.8.6+'),
+var dblite = require('dblite'),//.withSQLite('3.8.6+'),
     db = dblite('file.name');
 
 // Asynchronous, fast, and ...
@@ -17,7 +17,7 @@ More in [the related blogpost](http://webreflection.blogspot.com/2013/07/dblite-
 [![NPM](https://nodei.co/npm/dblite.png?downloads=true)](https://nodei.co/npm/dblite/)
 
 
-### Important
+### WARNING
 Starting from **sqlite3** version `3.8.6` you need a "_new line agnostic_" version of `dblite`, right now represented by the latest version `0.6.0`.
 
 This **will break** compatibility with older version of the database cli.
@@ -26,9 +26,13 @@ This **will break** compatibility with older version of the database cli.
 // old version
 var dblite = require('dblite');
 
-// NEW VERSION
+// 3.8.6 version
 var dblite = require('dblite').withSQLite('3.8.6+');
 ```
+
+**However**, version `3.8.8` introduced a new line `\n` on Windows machines too so right now [this project is somehow not portable](https://github.com/WebReflection/dblite/issues/33#issuecomment-75926454).
+
+Refactoring is happening, please stay tuned.
 
 
 ### The What And The Why
