@@ -2,7 +2,7 @@ dblite
 ======
 a zero hassle wrapper for sqlite
 ```javascript
-var dblite = require('dblite'),//.withSQLite('3.8.6+'),
+var dblite = require('dblite'),
     db = dblite('file.name');
 
 // Asynchronous, fast, and ...
@@ -17,10 +17,10 @@ More in [the related blogpost](http://webreflection.blogspot.com/2013/07/dblite-
 [![NPM](https://nodei.co/npm/dblite.png?downloads=true)](https://nodei.co/npm/dblite/)
 
 
-### WARNING
-Starting from **sqlite3** version `3.8.6` you need a "_new line agnostic_" version of `dblite`, right now represented by the latest version `0.6.0`.
+### Upadtes
+In **sqlite3** version `3.8.6` you need a "_new line agnostic_" version of `dblite`, used in dblite version `0.6.0`.
 
-This **will break** compatibility with older version of the database cli.
+This **breaks** compatibility with older version of the database cli but this problem should have been fixed in `0.7.0`.
 
 ```js
 // old version
@@ -28,11 +28,15 @@ var dblite = require('dblite');
 
 // 3.8.6 version
 var dblite = require('dblite').withSQLite('3.8.6+');
+
+// new version, same as old one
+var dblite = require('dblite');
+
 ```
 
-**However**, version `3.8.8` introduced a new line `\n` on Windows machines too so right now [this project is somehow not portable](https://github.com/WebReflection/dblite/issues/33#issuecomment-75926454).
+It seems that sqlite3 version `3.8.8+` introduced a new line `\n` on Windows machines too so the whole initialization is now performed asynchronously and through features detection.
 
-Refactoring is happening, please stay tuned.
+This should fix the annoying `EOL` problem "_fore`var`_"
 
 
 ### The What And The Why
