@@ -121,7 +121,7 @@ var
 
         // once closed, reassign this helper
         // and trigger all queued functions
-        program.on('close', function () {console.log('FINE');
+        program.on('close', function () {
           defineCSVEOL = function (fn) { fn(); };
           waitForEOLToBeDefined.forEach(defineCSVEOL);
           waitForEOLToBeDefined = null;
