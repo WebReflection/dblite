@@ -447,10 +447,16 @@ function dblite() {
 
   // main logic/method/entry point
   self.query = function(string, params, fields, callback) {
-    // notWorking is set once .close() has been called
-    // it does not make sense to execute anything after
-    // the program is being closed
-    if (notWorking) return onerror('closing'), self;
+    if (
+      // notWorking is set once .close() has been called
+      // it does not make sense to execute anything after
+      // the program is being closed
+      notWorking &&
+      // however, since at that time the program could also be busy
+      // let's be sure than this is either the exit call
+      // or that the last call is still the exit one
+      !(string === '.exit' || queue[queue.length - 1][0] === '.exit')
+    ) return onerror('closing'), self;
     // if something is still going on in the sqlite3 shell
     // the progcess is flagged as busy. Just queue other operations
     if (busy) return queue.push(arguments), self;
