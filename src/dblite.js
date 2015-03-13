@@ -101,35 +101,49 @@ var
 
     if (waitForEOLToBeDefined.push(fn) === 1) {
 
-      var program = createProgram(':memory:');
+      var
+        program = createProgram(':memory:'),
+        ondata = function (data) {
+          setUpAndGo(data.toString().slice(1));
+        },
+        // save the Mac, SAVE THE MAC!!!
+        // error could occur due \r\n
+        // so clearly that won't be the right EOL
+        onerror = function () {
+          setUpAndGo('\n');
+        },
+        setUpAndGo = function (eol) {
 
-      program.stdout.on('data', function ondata(data) {
+          // habemus EOL \o/
+          EOL = eol;
 
-        // habemus CSV used EOL \o/
-        EOL = data.toString().slice(1);
+          // what's EOL length? Used to properly parse data
+          EOL_LENGTH = EOL.length;
 
-        // what's EOL length? Used to properly parse data
-        EOL_LENGTH = EOL.length;
+          // makes EOL safe for strings passed to the shell
+          SANITIZER = new RegExp("[;" + EOL.split('').map(function(c) {
+            return '\\x' + ('0' + c.charCodeAt(0).toString(16)).slice(-2);
+          }).join('') + "]+$");
 
-        // makes EOL safe for strings passed to the shell
-        SANITIZER = new RegExp("[;" + EOL.split('').map(function(c) {
-          return '\\x' + ('0' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join('') + "]+$");
+          // used to mark the end of each line passed to the shell
+          SANITIZER_REPLACER = ';' + EOL;
 
-        // used to mark the end of each line passed to the shell
-        SANITIZER_REPLACER = ';' + EOL;
+          // once closed, reassign this helper
+          // and trigger all queued functions
+          program.on('close', function () {
+            defineCSVEOL = function (fn) { fn(); };
+            waitForEOLToBeDefined.forEach(defineCSVEOL);
+            waitForEOLToBeDefined = null;
+          });
 
-        // once closed, reassign this helper
-        // and trigger all queued functions
-        program.on('close', function () {
-          defineCSVEOL = function (fn) { fn(); };
-          waitForEOLToBeDefined.forEach(defineCSVEOL);
-          waitForEOLToBeDefined = null;
-        });
+          program.kill();
+        }
+      ;
 
-        program.kill();
-
-      });
+      program.stdout.on('data', ondata);
+      program.stdin.on('error', onerror);
+      program.stdout.on('error', onerror);
+      program.stderr.on('error', onerror);
 
       program.stdin.write('SELECT 1;\r\n');
 
