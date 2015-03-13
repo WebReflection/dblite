@@ -3,7 +3,7 @@
   "license" : "MIT",
   "engine": "node >= 0.6.0",
   "name": "dblite",
-  "description": "a zero hassle wrapper for sqlite - requires sqlite3 3.8.6 or greater",
+  "description": "a zero hassle wrapper for sqlite",
   "homepage": "https://github.com/WebReflection/dblite",
   "keywords": [
     "sqlite",
