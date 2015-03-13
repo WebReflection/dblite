@@ -14,7 +14,7 @@ More in [the related blogpost](http://webreflection.blogspot.com/2013/07/dblite-
 
 [![build status](https://secure.travis-ci.org/WebReflection/dblite.png)](http://travis-ci.org/WebReflection/dblite)
 
-[![NPM](https://nodei.co/npm/dblite.png?downloads=true)](https://nodei.co/npm/dblite/)
+[![NPM](https://nodei.co/npm/dblite.png?downloads=true)](https://www.npmjs.com/package/dblite)
 
 
 ### Upadtes
@@ -42,7 +42,7 @@ This should fix the annoying `EOL` problem "_fore`var`_"
 ### The What And The Why
 I've created `dblite` module because there's still not a simple and straight forward or standard way to have [sqlite](http://www.sqlite.org) in [node.js](http://nodejs.org) without requiring to re-compile, re-build, download sources a part or install dependencies instead of simply `apt-get install sqlite3` or `pacman -S sqlite3` in your \*nix system.
 
-`dblite` has been created with portability, simplicity, and reasonable performance for **embedded Hardware** such [Raspberry Pi](http://www.raspberrypi.org) and [Cubieboard](http://cubieboard.org) in mind.
+`dblite` has been created with portability, simplicity, and reasonable performance for **embedded Hardware** such ARM boards, Raspberry Pi, Arduino Yun, Atmel MIPS CPUs or Linino boards in mind.
 
 Generally speaking all linux based distributions like [Arch Linux](https://www.archlinux.org), where is not always that easy to `node-gyp` a module and add dependencies that work, can now use this battle tested wrap and perform basic to advanced sqlite operations.
 
