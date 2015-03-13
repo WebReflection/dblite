@@ -102,7 +102,7 @@ var
     if (waitForEOLToBeDefined.push(fn) === 1) {
 
       var
-        program = createProgram(':memory:'),
+        program = createProgram(':memory:', '-noheader'),
         ondata = function (data) {
           setUpAndGo(data.toString().slice(1));
         },
