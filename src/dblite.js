@@ -623,7 +623,7 @@ function normalizeFirstArgument(args) {
   if (file !== ':memory:') {
     args[0] = path.resolve(args[0]);
   }
-  return args;
+  return args.indexOf('-header') < 0 ? args.concat('-noheader') : args;
 }
 
 // assuming generated CSV is always like
