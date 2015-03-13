@@ -17,8 +17,16 @@ More in [the related blogpost](http://webreflection.blogspot.com/2013/07/dblite-
 [![NPM](https://nodei.co/npm/dblite.png?downloads=true)](https://www.npmjs.com/package/dblite)
 
 
-### Upadtes
-In **sqlite3** version `3.8.6` you need a "_new line agnostic_" version of `dblite`, used in dblite version `0.6.0`.
+### Updates
+Version `0.7.5` forces `-noheader` flag if there is no explicit `-header` flag so that no matter what, headers will **not** be used.
+
+This will eventually overwrite the `.sqliterc` but will make the library behavior more consistent across platforms.
+
+Please check [issue 35](https://github.com/WebReflection/dblite/issues/35) to know more.
+
+- - - - - -
+
+Previously, in **sqlite3** version `3.8.6` you need a "_new line agnostic_" version of `dblite`, used in dblite version `0.6.0`.
 
 This **breaks** compatibility with older version of the database cli but this problem should have been fixed in `0.7.0`.
 
