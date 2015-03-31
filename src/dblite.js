@@ -266,7 +266,7 @@ function dblite() {
   program.stdout.on('data', function (data) {
     /*jshint eqnull: true*/
     // big output might require more than a call
-    var str, result, callback, fields, headers, wasSelectLocal, rows;
+    var str, result, callback, fields, headers, wasSelectLocal, dontParseCSVLocal, rows;
     if (wasError) {
       selectResult = '';
       wasError = false;
@@ -276,6 +276,7 @@ function dblite() {
       }
       return;
     }
+
     // the whole output is converted into a string here
     selectResult += data;
     // if the end of the output is the serapator
@@ -293,6 +294,8 @@ function dblite() {
       // if it was a select
       if (wasSelect || wasNotSelect) {
         wasSelectLocal = wasSelect;
+        // make temporary parse flag
+        dontParseCSVLocal = dontParseCSV;
         // set as false all conditions
         // only here dontParseCSV could have been true
         // set to false that too
@@ -306,7 +309,9 @@ function dblite() {
         if (wasSelectLocal) {
           // unless specified, process the string
           // converting the CSV into an Array of rows
-          result = dontParseCSV ? str : parseCSV(str);
+
+
+          result = dontParseCSVLocal ? str : parseCSV(str);
           // if there were headers/fields and we have a result ...
           if (headers && isArray(result) && result.length) {
             //  ... and fields is not defined
