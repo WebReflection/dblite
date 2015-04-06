@@ -886,6 +886,11 @@ dblite.parseCSV = parseCSV;
 // usually you don't want to do this
 dblite.escape = escape;
 
+// converter rows to objects for map method.
+// example:
+// rows.map(dblite.row2object, fields)
+dblite.row2object = row2object;
+
 // that's it!
 module.exports = dblite;
 
