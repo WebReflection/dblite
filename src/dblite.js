@@ -341,7 +341,7 @@ function dblite() {
         next();
         // if there was actually a callback to call
         if (callback) {
-          rows = fields ? (
+          rows = ( ! dontParseCSVLocal && fields) ? (
               // and if there was a need to parse each row
               isArray(fields) ?
                 // as object with properties
