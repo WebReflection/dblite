@@ -252,7 +252,7 @@ function dblite() {
   function next() {
     if (queue.length) {
       // ... do that and wait for next check
-      self.query.apply(self, queue.shift());
+      self._query.apply(self, queue.shift());
     }
   }
 
@@ -459,13 +459,34 @@ function dblite() {
   // Handy if for some reason data has to be passed around
   // as string instead of being serialized and deserialized
   // as Array of Arrays. Don't use if not needed.
-  self.plain = function() {
-    dontParseCSV = true;
-    return self.query.apply(self, arguments);
+  // Handy if for some reason data has to be passed around
+  // as string instead of being serialized and deserialized
+  // as Array of Arrays. Don't use if not needed.
+  self.plain = function(string) {
+    if (typeof string !== 'string') throw new Error('Argument #1 should be a string');
+
+    string = {
+      query: string,
+      dontParse: true
+    };
+
+    return self._query.apply(self, arguments);
+  };
+
+  // Send query to database. Main method
+  self.query = function(string) {
+    if (typeof string !== 'string') throw new Error('Argument #1 should be a string');
+
+    string = {
+      query: string,
+      dontParse: false
+    };
+
+    return self._query.apply(self, arguments);
   };
 
   // main logic/method/entry point
-  self.query = function(string, params, fields, callback) {
+  self._query = function(string, params, fields, callback) {
     // notWorking is set once .close() has been called
     // it does not make sense to execute anything after
     // the program is being closed
@@ -474,6 +495,13 @@ function dblite() {
     // the progcess is flagged as busy. Just queue other operations
     if (busy) return queue.push(arguments), self;
     // if a SELECT or a PRAGMA ...
+    // unwind arguments
+
+    if (typeof string === 'object') {
+      dontParseCSV = string.dontParse;
+      string = string.query;
+    }
+
     wasSelect = SELECT.test(string);
     if (wasSelect) {
       // SELECT and PRAGMA makes `dblite` busy

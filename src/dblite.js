@@ -802,6 +802,7 @@ function escape(what) {
 				SINGLE_QUOTES, SINGLE_QUOTES_DOUBLED
 			) + "'");
 		}
+		  break;
     // SQLite has no Boolean type
     case 'boolean':
       return what ? '1' : '0'; // 1 => true, 0 => false
