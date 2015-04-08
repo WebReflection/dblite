@@ -437,6 +437,9 @@ function dblite() {
   // Handy if for some reason data has to be passed around
   // as string instead of being serialized and deserialized
   // as Array of Arrays. Don't use if not needed.
+  // Handy if for some reason data has to be passed around
+  // as string instead of being serialized and deserialized
+  // as Array of Arrays. Don't use if not needed.
   self.plain = function(string) {
     if (typeof string !== 'string') throw new Error('Argument #1 should be a string');
 
@@ -445,7 +448,7 @@ function dblite() {
       dontParse: true
     };
 
-    return self.query.apply(self, arguments);
+    return self._query.apply(self, arguments);
   };
 
   // Send query to database. Main method
@@ -457,7 +460,7 @@ function dblite() {
       dontParse: false
     };
 
-    return self.query.apply(self, arguments);
+    return self._query.apply(self, arguments);
   };
 
   // main logic/method/entry point
