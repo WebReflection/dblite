@@ -897,6 +897,8 @@ dblite.escape = escape;
 // rows.map(dblite.row2object, fields)
 dblite.row2object = row2object;
 
+dbLite.parseFields = parseFields;
+
 // that's it!
 module.exports = dblite;
 
