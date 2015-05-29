@@ -611,6 +611,28 @@ function dblite() {
 		// chainability just useful here for multiple queries at once
 		return self;
 	};
+
+	// to manually parse CSV data if necessary
+	// mainly to be able to use db.plain(SQL)
+	// without parsing it right away and pass the string
+	// around instead of serializing and de-serializing it
+	// all the time. Ideally this is a scenario for clusters
+	// no need to usually do manually anything otherwise.
+	self.parseCSV = parseCSV;
+
+	// how to manually escape data
+	// might be handy to write directly SQL strings
+	// instead of using handy paramters Array/Object
+	// usually you don't want to do this
+	self.escape = escape;
+
+	// converter rows to objects for map method.
+	// example:
+	// rows.map(dblite.row2object, fields)
+	self.row2object = row2object;
+	self.row2parsed = row2parsed;
+	self.parseFields = parseFields;
+
 	return self;
 }
 
@@ -868,27 +890,6 @@ dblite.withSQLite = function (sqliteVersion) {
 	dblite.sqliteVersion = sqliteVersion;
 	return dblite;
 };
-
-// to manually parse CSV data if necessary
-// mainly to be able to use db.plain(SQL)
-// without parsing it right away and pass the string
-// around instead of serializing and de-serializing it
-// all the time. Ideally this is a scenario for clusters
-// no need to usually do manually anything otherwise.
-dblite.parseCSV = parseCSV;
-
-// how to manually escape data
-// might be handy to write directly SQL strings
-// instead of using handy paramters Array/Object
-// usually you don't want to do this
-dblite.escape = escape;
-
-// converter rows to objects for map method.
-// example:
-// rows.map(dblite.row2object, fields)
-dblite.row2object = row2object;
-dblite.row2parsed = row2parsed;
-dblite.parseFields = parseFields;
 
 // that's it!
 module.exports = dblite;
