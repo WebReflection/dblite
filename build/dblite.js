@@ -798,7 +798,7 @@ function row2parsed(row) {
 		if (parsers[i] === Buffer) {
 			out[fields[i]] = parsers[i](row[i], 'hex');
 		} else if (parsers[i] === Array) {
-			out[fields[i]] = row[i].split(",")
+			out[fields[i]] = row[i] ? row[i].split(",") : []
 		} else {
 			out[fields[i]] = parsers[i](row[i]);
 		}
