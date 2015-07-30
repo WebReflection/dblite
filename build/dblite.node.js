@@ -347,7 +347,8 @@ function dblite() {
               result
             ;
             // if there was an error signature
-            if (1 < callback.length) {
+            // (if invoked under cadence, cb.length === 0)
+            if (1 !== callback.length) {
               callback.call(self, null, rows);
             } else {
               // invoke it with the db object as context
