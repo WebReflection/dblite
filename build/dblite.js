@@ -498,6 +498,7 @@ function dblite() {
 					if (typeof fields == 'function') {
 						// assign it
 						$callback = fields;
+						fields = null;
 						// has string parameters to repalce
 						// such ? or :id and others ?
 						if (HAS_PARAMS.test(string)) {
