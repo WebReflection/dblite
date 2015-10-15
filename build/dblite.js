@@ -801,7 +801,12 @@ function row2parsed(row) {
 		} else if (parsers[i] === Array) {
 			out[fields[i]] = row[i] ? row[i].split(",") : []
 		} else if (parsers[i] === String) {
-			out[fields[i]] = JSON.parse(JSON.stringify((row[i])));
+			try {
+				out[fields[i]] = JSON.parse(JSON.stringify((row[i] || "")));
+			}catch(e){
+				out[fields[i]] = row[i];
+			}
+
 		} else {
 			out[fields[i]] = parsers[i](row[i]);
 		}
