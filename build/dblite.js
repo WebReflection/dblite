@@ -22,6 +22,7 @@
  */
 /*! a zero hassle wrapper for sqlite by Andrea Giammarchi !*/
 var
+	sqlTest = "",
 	isArray = Array.isArray,
 // used to generate unique "end of the query" identifiers
 	crypto = require('crypto'),
@@ -204,6 +205,7 @@ function dblite() {
 		wasSelect = false,
 		wasNotSelect = false,
 		wasError = false,
+		longRequest = false,
 	// forces the output not to be processed
 	// might be handy in some case where it's passed around
 	// as string instread of needing to serialize/unserialize
@@ -278,14 +280,23 @@ function dblite() {
 			return;
 		}
 
-		if (selectResult.length + data.length >= 536870912) {
+		if (longRequest && data.toString().slice(SUPER_SECRET_LENGTH) === SUPER_SECRET) {
+			selectResult = "";
+			data = SUPER_SECRET;
+			longRequest = false;
+			console.log("out of memory test", sqlTest)
+		}
+		if (longRequest) {
+			data = "";
+		}
+
+		if (selectResult.length + data.length >= 100000000) {
 			selectResult = '';
-			busy = false;
-			next();
+			longRequest = true;
 		}
 
 		// the whole output is converted into a string here
-		selectResult += data;
+		selectResult += data.toString();
 		// if the end of the output is the serapator
 		if (selectResult.slice(SUPER_SECRET_LENGTH) === SUPER_SECRET) {
 			// time to move forward since sqlite3 has done
@@ -486,9 +497,11 @@ function dblite() {
 			dontParseCSV = string.dontParse;
 			string = string.query;
 		}
-
 		wasSelect = SELECT.test(string);
+		sqlTest = "";
 		if (wasSelect) {
+			sqlTest = string;
+
 			// SELECT and PRAGMA makes `dblite` busy
 			busy = true;
 			switch (arguments.length) {
