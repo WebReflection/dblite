@@ -206,6 +206,7 @@ function dblite() {
 		wasNotSelect = false,
 		wasError = false,
 		longRequest = false,
+		memoryCount = 0,
 	// forces the output not to be processed
 	// might be handy in some case where it's passed around
 	// as string instread of needing to serialize/unserialize
@@ -279,12 +280,13 @@ function dblite() {
 			}
 			return;
 		}
+		memoryCount += data.length;
 
 		if (longRequest && data.toString().slice(SUPER_SECRET_LENGTH) === SUPER_SECRET) {
 			selectResult = "";
 			data = SUPER_SECRET;
 			longRequest = false;
-			console.log("out of memory test", sqlTest)
+			console.log("out of memory test", memoryCount, sqlTest)
 		}
 		if (longRequest) {
 			data = "";
@@ -299,6 +301,7 @@ function dblite() {
 		selectResult += data.toString();
 		// if the end of the output is the serapator
 		if (selectResult.slice(SUPER_SECRET_LENGTH) === SUPER_SECRET) {
+			memoryCount = 0;
 			// time to move forward since sqlite3 has done
 			str = selectResult.slice(0, SUPER_SECRET_LENGTH);
 			// drop the secret header if present
@@ -500,7 +503,7 @@ function dblite() {
 		wasSelect = SELECT.test(string);
 		sqlTest = "";
 		if (wasSelect) {
-			sqlTest = string;
+			sqlTest = string + " " + (Object.prototype.toString.call(params) == "[object Object]" ? JSON.stringify(params): "");
 
 			// SELECT and PRAGMA makes `dblite` busy
 			busy = true;
