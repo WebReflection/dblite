@@ -110,8 +110,8 @@ var
 
 		// makes EOL safe for strings passed to the shell
 		SANITIZER = new RegExp("[;" + EOL.split('').map(function (c) {
-			return '\\x' + ('0' + c.charCodeAt(0).toString(16)).slice(-2);
-		}).join('') + "]+$");
+				return '\\x' + ('0' + c.charCodeAt(0).toString(16)).slice(-2);
+			}).join('') + "]+$");
 
 		// used to mark the end of each line passed to the shell
 		SANITIZER_REPLACER = ';' + EOL;
@@ -276,6 +276,12 @@ function dblite() {
 				next();
 			}
 			return;
+		}
+
+		if (selectResult.length + data.length >= 536870912) {
+			selectResult = '';
+			busy = false;
+			next();
 		}
 
 		// the whole output is converted into a string here
@@ -703,9 +709,9 @@ function parseCSV(output) {
 		}
 		fields[index++] = str;
 		if (output[i = iNext] === EOL[0] && (
-			EOL_LENGTH === 1 || (
-			output[i + 1] === EOL[1] && ++i
-			)
+				EOL_LENGTH === 1 || (
+					output[i + 1] === EOL[1] && ++i
+				)
 			)
 		) {
 			rows[rindex++] = fields;
@@ -803,7 +809,7 @@ function row2parsed(row) {
 		} else if (parsers[i] === String) {
 			try {
 				out[fields[i]] = JSON.parse(JSON.stringify((row[i] || "")));
-			}catch(e){
+			} catch (e) {
 				out[fields[i]] = row[i];
 			}
 
