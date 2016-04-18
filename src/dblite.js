@@ -132,8 +132,9 @@ var
           // and trigger all queued functions
           program.on('close', function () {
             defineCSVEOL = function (fn) { fn(); };
-            waitForEOLToBeDefined.forEach(defineCSVEOL);
-            waitForEOLToBeDefined = null;
+            waitForEOLToBeDefined
+              .splice(0, waitForEOLToBeDefined.length)
+              .forEach(defineCSVEOL);
           });
 
           program.kill();
