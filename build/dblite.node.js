@@ -68,7 +68,7 @@ var
   // for simple query replacements: WHERE field = ?
   REPLACE_QUESTIONMARKS = /\?/g,
   // for named replacements: WHERE field = :data
-  REPLACE_PARAMS = /(?:\:|\@|\$)([a-zA-Z_$]+)/g,
+  REPLACE_PARAMS = /(?:\:|\@|\$)([a-zA-Z0-9_$]+)/g,
   // the way CSV threats double quotes
   DOUBLE_DOUBLE_QUOTES = /""/g,
   // to escape strings
@@ -78,7 +78,7 @@ var
   // which usually is full of "
   SINGLE_QUOTES_DOUBLED = "''",
   // to verify there are named fields/parametes
-  HAS_PARAMS = /(?:\?|(?:(?:\:|\@|\$)[a-zA-Z_$]+))/,
+  HAS_PARAMS = /(?:\?|(?:(?:\:|\@|\$)[a-zA-Z0-9_$]+))/,
   // shortcut used as deafault notifier
   log = console.log.bind(console),
   // the default binary as array of paths
