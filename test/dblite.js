@@ -517,5 +517,14 @@ wru.test([
       ;
 
     }
+  }, {
+    name: 'json_each(json_array(20170318,20170319,20170329))',
+    test: function () {
+      dblite(':memory:')
+        .query('select * from json_each(json_array(20170318,20170319,20170329))', wru.async(function (rows) {
+          wru.assert('[["0","20170318","integer","20170318","1","","$[0]","$"],["1","20170319","integer","20170319","2","","$[1]","$"],["2","20170329","integer","20170329","3","","$[2]","$"]]' === JSON.stringify(rows));
+        }))
+        .on('close', Object)
+    }
   }
 ]);
