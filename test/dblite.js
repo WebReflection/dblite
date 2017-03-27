@@ -523,13 +523,14 @@ wru.test([
       dblite(':memory:')
         .query('SELECT sqlite_version()', wru.async(function (rows) {
           wru.assert(true);
-          if (parseFloat(rows[0][0].replace(/\.\d+$/, '')) < 3.17) {
+          if (parseFloat(rows[0][0].replace(/\.\d+$/, '')) > 3.16) {
+            this.query('select * from json_each(json_array(20170318,20170319,20170329))', wru.async(function (rows) {
+              wru.assert('[["0","20170318","integer","20170318","1","","$[0]","$"],["1","20170319","integer","20170319","2","","$[1]","$"],["2","20170329","integer","20170329","3","","$[2]","$"]]' === JSON.stringify(rows));
+            }));
+          } else {
             console.log('skipped');
             this.close();
           }
-        }))
-        .query('select * from json_each(json_array(20170318,20170319,20170329))', wru.async(function (rows) {
-            wru.assert('[["0","20170318","integer","20170318","1","","$[0]","$"],["1","20170319","integer","20170319","2","","$[1]","$"],["2","20170329","integer","20170329","3","","$[2]","$"]]' === JSON.stringify(rows));
         }))
         .on('close', Object);
     }
