@@ -522,13 +522,15 @@ wru.test([
     test: function () {
       dblite(':memory:')
         .query('SELECT sqlite_version()', wru.async(function (rows) {
-          wru.assert(true);
-          if (parseFloat(rows[0][0].replace(/\.\d+$/, '')) > 3.16) {
+          var version = parseFloat(rows[0][0].replace(/\.\d+$/, ''));
+          wru.assert(version);
+          // to test this locally, drop the !
+          if (!version) {
             this.query('select * from json_each(json_array(20170318,20170319,20170329))', wru.async(function (rows) {
               wru.assert('[["0","20170318","integer","20170318","1","","$[0]","$"],["1","20170319","integer","20170319","2","","$[1]","$"],["2","20170329","integer","20170329","3","","$[2]","$"]]' === JSON.stringify(rows));
             }));
           } else {
-            console.log('skipped');
+            console.log('skipped for ' + version);
             this.close();
           }
         }))
