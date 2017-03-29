@@ -595,9 +595,10 @@ function dblite() {
             $callback = fields;
             program.stdin.write(
               (sanitize(
-                HAS_PARAMS.test(string) ?
+                params == null ? string :
+                (HAS_PARAMS.test(string) ?
                   replaceString(string, params) :
-                  string
+                  string)
               )) +
               EOL + 'SELECT ' + SUPER_SECRET_SELECT
             );
