@@ -1,7 +1,9 @@
 dblite
 ======
 
-[![Build Status](https://travis-ci.org/WebReflection/dblite.svg?branch=master)](https://travis-ci.org/WebReflection/dblite) [![Coverage Status] [![donate](https://img.shields.io/badge/$-donate-ff69b4.svg?maxAge=2592000&style=flat)](https://github.com/WebReflection/donate)
+[![Build Status](https://travis-ci.org/WebReflection/dblite.svg?branch=master)](https://travis-ci.org/WebReflection/dblite) [![donate](https://img.shields.io/badge/$-donate-ff69b4.svg?maxAge=2592000&style=flat)](https://github.com/WebReflection/donate)
+
+[![NPM](https://nodei.co/npm/dblite.svg?downloads=true)](https://www.npmjs.com/package/dblite)
 
 a zero hassle wrapper for sqlite
 ```javascript
@@ -14,10 +16,6 @@ db.query('SELECT * FROM table', function(err, rows) {
 });
 ```
 More in [the related blogpost](http://webreflection.blogspot.com/2013/07/dblite-sqlite3-for-nodejs-made-easy.html) and here too :-)
-
-[![build status](https://secure.travis-ci.org/WebReflection/dblite.png)](http://travis-ci.org/WebReflection/dblite)
-
-[![NPM](https://nodei.co/npm/dblite.png?downloads=true)](https://www.npmjs.com/package/dblite)
 
 
 ### Updates
