@@ -811,6 +811,9 @@ function escape(what) {
       return "'" + what.replace(
         SINGLE_QUOTES, SINGLE_QUOTES_DOUBLED
       ) + "'";
+    case 'undefined':
+      what = null;
+      /* falls through */
     case 'object':
       return what == null ?
         'null' :
