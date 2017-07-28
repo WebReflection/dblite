@@ -1,7 +1,7 @@
 dblite
 ======
 
-[![donate](https://img.shields.io/badge/$-donate-ff69b4.svg?maxAge=2592000&style=flat)](https://github.com/WebReflection/donate)
+[![Build Status](https://travis-ci.org/WebReflection/dblite.svg?branch=master)](https://travis-ci.org/WebReflection/dblite) [![Coverage Status] [![donate](https://img.shields.io/badge/$-donate-ff69b4.svg?maxAge=2592000&style=flat)](https://github.com/WebReflection/donate)
 
 a zero hassle wrapper for sqlite
 ```javascript
