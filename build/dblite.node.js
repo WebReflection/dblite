@@ -64,7 +64,7 @@ var
   // use to re-generate Date objects
   DECIMAL = /^[1-9][0-9]*$/,
   // verify if it's a select or not
-  SELECT = /^(?:select|SELECT|pragma|PRAGMA) /,
+  SELECT = /^(?:select|SELECT|pragma|PRAGMA|with|WITH) /,
   // for simple query replacements: WHERE field = ?
   REPLACE_QUESTIONMARKS = /\?/g,
   // for named replacements: WHERE field = :data
@@ -379,7 +379,6 @@ function dblite() {
     // node 0.6 has not unref
     if (program.unref) {
       program.on('close', close);
-      program.unref();
     } else {
       IS_NODE_06 = true;
       program.stdout.on('close', close);
@@ -396,6 +395,8 @@ function dblite() {
   function close(code) {
     if (self.listeners('close').length) {
       self.emit('close', code);
+      if (program.unref)
+        program.unref();
     } else {
       log('bye bye');
     }

@@ -6,5 +6,6 @@ node_modules/*
 build/*.amd.js
 Makefile
 index.html
+package-lock.json
 .gitignore
 .travis.yml

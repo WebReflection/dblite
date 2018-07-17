@@ -357,7 +357,6 @@ function dblite() {
     // node 0.6 has not unref
     if (program.unref) {
       program.on('close', close);
-      program.unref();
     } else {
       IS_NODE_06 = true;
       program.stdout.on('close', close);
@@ -374,6 +373,8 @@ function dblite() {
   function close(code) {
     if (self.listeners('close').length) {
       self.emit('close', code);
+      if (program.unref)
+        program.unref();
     } else {
       log('bye bye');
     }
