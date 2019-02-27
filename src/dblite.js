@@ -464,6 +464,14 @@ function dblite() {
 
   // main logic/method/entry point
   self.query = function(string, params, fields, callback) {
+    // recognizes sql-template-strings objects
+    if (typeof string === 'object' && 'sql' in string && 'values' in string) {
+      switch (arguments.length) {
+        case 3: return self.query(string.sql, string.values, params, fields);
+        case 2: return self.query(string.sql, string.values, params);
+      }
+      return self.query(string.sql, string.values);
+    }
     if (
       // notWorking is set once .close() has been called
       // it does not make sense to execute anything after
