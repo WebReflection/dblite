@@ -22,7 +22,7 @@ build:
 	make node
 #	make amd
 	make test
-	make hint
+#	make hint
 	make bench
 #	make size
 

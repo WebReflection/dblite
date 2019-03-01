@@ -897,6 +897,71 @@ dblite.parseCSV = parseCSV;
 // usually you don't want to do this
 dblite.escape = escape;
 
+// helps writing queries
+dblite.SQL = (function () {
+  'use strict';
+
+  const lsp = str => (/^[\s\n\r]/.test(str) ? str : ' ' + str);
+
+  const push = (str, val, statement, spaced) => {
+    const {strings, values} = statement;
+    str[str.length - 1] += spaced ? lsp(strings[0]) : strings[0];
+    str.push(...strings.slice(1));
+    val.push(...values);
+  };
+
+  class SQLStatement {
+    constructor(strings, values) {
+      this.strings = strings;
+      this.values = values;
+    }
+    append(statement) {
+      const {strings, values} = this;
+      if (statement instanceof SQLStatement)
+        push(strings, values, statement, true);
+      else
+        strings[strings.length - 1] += lsp(statement);
+      return this;
+    }
+    named() {
+      return this;
+    }
+    get sql() {
+      return this.strings.join('?');
+    }
+  }
+
+  const SQL = (tpl, ...val) => {
+    const strings = [tpl[0]];
+    const values = [];
+    for (let {length} = tpl, prev = tpl[0], j = 0, i = 1; i < length; i++) {
+      const current = tpl[i];
+      const value = val[i - 1];
+      if (/^('|")/.test(current) && RegExp.$1 === prev.slice(-1)) {
+        strings[j] = [
+          strings[j].slice(0, -1),
+          value,
+          current.slice(1)
+        ].join('`');
+      } else {
+        if (value instanceof SQLStatement) {
+          push(strings, values, value, false);
+          j = strings.length - 1;
+          strings[j] += current;
+        } else {
+          values.push(value);
+          j = strings.push(current) - 1;
+        }
+        prev = strings[j];
+      }
+    }
+    return new SQLStatement(strings, values);
+  };
+
+  return SQL;
+
+}());
+
 // that's it!
 module.exports = dblite;
 

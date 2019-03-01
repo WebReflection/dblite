@@ -4,6 +4,7 @@ var dblite = require('../build/dblite.node.js'),
       (require('os').tmpdir || function(){return '.'})(),
       'dblite.test.sqlite'
     ),
+    SQL = dblite.SQL,
     db;
 
 // dblite.bin = '/Users/agiammarchi/Downloads/sqlite3';
@@ -36,7 +37,7 @@ wru.test([
       var start = Date.now(), many = 0;
       db.on('error', wru.log);
       while(many++ < 100) {
-        db.query('INSERT INTO kvp VALUES(null, "k' + many + '", "v' + many + '")');
+        db.query(SQL`INSERT INTO kvp VALUES(null, ${'k' + many}, ${'v' + many})`);
       }
       db.lastRowID('kvp', wru.async(function(data){
         wru.log(data + ' records in ' + ((Date.now() - start) / 1000) + ' seconds');
@@ -168,7 +169,7 @@ wru.test([
     test: function () {
       var utf8 = '¥ · £ · € · $ · ¢ · ₡ · ₢ · ₣ · ₤ · ₥ · ₦ · ₧ · ₨ · ₩ · ₪ · ₫ · ₭ · ₮ · ₯ · ₹';
       db.query('INSERT INTO kvp VALUES(null, ?, ?)', [utf8, utf8]);
-      db.query('SELECT value FROM kvp WHERE key = ? AND value = ?', [utf8, utf8], wru.async(function(rows){
+      db.query('SELECT `value` FROM `kvp` WHERE `key` = ? AND `value` = ?', [utf8, utf8], wru.async(function(rows){
         console.log(utf8);
         wru.assert(rows.length === 1 && rows[0][0] === utf8);
       }));
