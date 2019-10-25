@@ -92,7 +92,6 @@ var
         cwd: bin.slice(0, -1).join(PATH_SEP) || process.cwd(),
         env: process.env, // same env is OK
         encoding: 'utf8', // utf8 is OK
-        detached: true,   // asynchronous
         stdio: ['pipe', 'pipe', 'pipe'] // handled here
       }
     );
@@ -978,9 +977,10 @@ var db =
 db.query('PRAGMA table_info(kvp)');
 
 // to test memory database
+db.close();
 var db = require('./build/dblite.node.js')(':memory:');
 db.query('CREATE TABLE test (key INTEGER PRIMARY KEY, value TEXT)') && undefined;
 db.query('INSERT INTO test VALUES(null, "asd")') && undefined;
 db.query('SELECT * FROM test') && undefined;
-// db.close();
+db.close();
 */
