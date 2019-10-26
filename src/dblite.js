@@ -92,7 +92,6 @@ var
         cwd: bin.slice(0, -1).join(PATH_SEP) || process.cwd(),
         env: process.env, // same env is OK
         encoding: 'utf8', // utf8 is OK
-        detached: true,   // asynchronous
         stdio: ['pipe', 'pipe', 'pipe'] // handled here
       }
     );
