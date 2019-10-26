@@ -35,5 +35,8 @@
     "jshint": "^2.10.2",
     "markdown": "^0.5.0",
     "wru": "^0.3.0"
+  },
+  "bugs": {
+    "url": "https://github.com/WebReflection/dblite/issues"
   }
 }
