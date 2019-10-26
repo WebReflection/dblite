@@ -1,9 +1,10 @@
 src/*
 test/*
 benchmark/*
+template/license.after
+template/license.before
 template/*
 node_modules/*
-template/*
 build/*.amd.js
 Makefile
 index.html
