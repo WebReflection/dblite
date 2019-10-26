@@ -507,7 +507,7 @@ wru.test([
           }
           db
             .query('INSERT INTO users VALUES(?, ?)', [1, 'bar@example.com'], function(err, data){
-              setTimeout(done, 1000, 'should have produced an error', err);
+              setTimeout(done, 1500, 'should have produced an error', err);
             })
             .query('SELECT * FROM users WHERE id = ?', [1], function(err, data) {
               done('the error did not trigger', false);

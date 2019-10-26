@@ -1,7 +1,6 @@
 {
   "version": "1.0.1",
   "license": "MIT",
-  "engine": "node >= 0.6.0",
   "name": "dblite",
   "description": "a zero hassle wrapper for sqlite",
   "homepage": "https://github.com/WebReflection/dblite",
@@ -22,10 +21,7 @@
     "wrap",
     "spawn"
   ],
-  "author": {
-    "name": "Andrea Giammarchi",
-    "web": "http://webreflection.blogspot.com/"
-  },
+  "author": "Andrea Giammarchi",
   "repository": {
     "type": "git",
     "url": "git://github.com/WebReflection/dblite.git"
@@ -36,7 +32,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "jshint": "^2.9.5",
+    "jshint": "^2.10.2",
     "markdown": "^0.5.0",
     "wru": "^0.3.0"
   }
