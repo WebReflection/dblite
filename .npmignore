@@ -3,6 +3,7 @@ test/*
 benchmark/*
 template/*
 node_modules/*
+template/*
 build/*.amd.js
 Makefile
 index.html
