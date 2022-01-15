@@ -1,9 +1,15 @@
 dblite
 ======
 
-[![Build Status](https://travis-ci.org/WebReflection/dblite.svg?branch=master)](https://travis-ci.org/WebReflection/dblite) [![donate](https://img.shields.io/badge/$-donate-ff69b4.svg?maxAge=2592000&style=flat)](https://github.com/WebReflection/donate)
+[![Build Status](https://travis-ci.org/WebReflection/dblite.svg?branch=master)](https://travis-ci.org/WebReflection/dblite)
 
-[![NPM](https://nodei.co/npm/dblite.svg?downloads=true)](https://www.npmjs.com/package/dblite)
+# Deprecated
+
+This module served me well to date but it's overly complicated for very little real-world gain or reasons to be so.
+
+Please consider **[sqlite-tag-spawned](https://github.com/WebReflection/sqlite-tag-spawned#readme)** as modern, safe, as fast as this module is, alternative, as I am not planning to improve much in here from now on, thank you!
+
+- - - - - -
 
 a zero hassle wrapper for sqlite
 ```javascript
